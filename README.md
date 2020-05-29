@@ -4,6 +4,9 @@ DeepND ASD &amp; ID
 ## System Requirements
 ### Hardware Requirements
 
+GPU: 7 nVidia GeForce GTX 1080 or equivalent configurations with at least 70GB of memory;  Recommended: 3 nVidia Titan RTx<br/>
+Disk Storage: 25 GB of free disk space
+
 ### Software Requirments
 Python: 3.6+<br/>
 OS: All major platforms (Linux, macOS, Windows)<br/>
