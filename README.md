@@ -1,2 +1,2 @@
 # DeepND
-DeepND ASd &amp; ID 
+DeepND ASD &amp; ID 
