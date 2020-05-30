@@ -1,3 +1,10 @@
+"""
+utils.py
+Utiliy functions for DeepND 
+Bilkent University, Department of Computer Engineering
+Ankara, 2020
+"""
+
 import numpy as np
 import pandas as pd
 
