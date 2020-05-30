@@ -7,8 +7,10 @@ Ankara, 2020
 
 import numpy as np
 import pandas as pd
+import csv
 
 def intersect_lists(source_list, target_list, lookup):
+    #Intersects gene list from multple sources
     source_indices = []
     target_indices = []
     result = []
@@ -38,8 +40,7 @@ def intersect_lists(source_list, target_list, lookup):
             not_found_indices.append(source_index)
             not_found_item.append(source_item)
             not_found_count += 1
-            #print("The gene {0} is not found. Not Found Count:{1}".format(source_item, not_found_count))
-       
+            #print("The gene {0} is not found. Not Found Count:{1}".format(source_item, not_found_count))      
     return result, source_indices, not_found_indices, target_indices
             
 def does_intersect(source_list, target_list):
@@ -47,17 +48,16 @@ def does_intersect(source_list, target_list):
         for target_item in target_list:
             if source_item.lower() == target_item.lower():
                 return True
-    
     return False
 
 def constructGeneDictionary(path):
+    # Constructs a dictionary for gene aliases and ids
     genes = dict()
     lineCount = 1
     with open(path) as tsv:
         for line in csv.reader(tsv, dialect = csv.excel_tab, delimiter  = "\t"): #You can also use delimiter="\t" rather than giving a dialect.
             if line[0] == "Approved symbol":
                 continue
-            
             for item in line:
                 if item == "":
                     continue
@@ -73,9 +73,7 @@ def constructGeneDictionary(path):
                         for comma_item2 in gene_item2:
                             if comma_item2 == comma_item:
                                 continue
-                            gene_list.append(comma_item2.lower())
-                    
+                            gene_list.append(comma_item2.lower())                    
                     genes[comma_item.lower()] = gene_list
-            lineCount += 1
-            
+            lineCount += 1         
     return genes
