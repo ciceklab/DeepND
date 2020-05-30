@@ -1,3 +1,9 @@
+"""
+models.py
+Multitask and singletask model constructors for DeepND 
+Bilkent University, Department of Computer Engineering
+Ankara, 2020
+"""
 import pandas as pd
 import numpy as np
 import math
@@ -196,7 +202,7 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         final[:, 0] = results2
         return final
         
-class DeepND(torch.nn.Module):
+class DeepND(torch.nn.Module): # Multi Task DeepND
     def __init__(self):
         super(DeepND, self).__init__()
         self.unit = 15
