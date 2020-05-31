@@ -50,7 +50,7 @@ if mode:
     print("Generating results for ", diseasename," Exp: ", experiment)
     access_rights = 0o755
     try:
-        os.mkdir("/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test", access_rights)
+        os.mkdir(root+diseasename+"Exp"+str(experiment)+"Test", access_rights)
     except OSError:
         print ("Creation of the test directory failed")
     else:
