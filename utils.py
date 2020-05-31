@@ -9,6 +9,22 @@ import numpy as np
 import pandas as pd
 import csv
 
+def weight_reset(m):
+    if isinstance(m, GCNConv) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm1d):
+        m.reset_parameters()
+    # Xavier initialization for layers
+    if isinstance(m, nn.Linear) or isinstance(m, GCNConv):
+        torch.nn.init.xavier_uniform_(m.weight)
+        torch.nn.init.zeros_(m.bias)
+        
+def freeze_layer(layer):
+    for param in layer.parameters():
+        param.requires_grad = False
+        
+def unfreeze_layer(layer):
+    for param in layer.parameters():
+        param.requires_grad = True
+
 def intersect_lists(source_list, target_list, lookup):
     #Intersects gene list from multple sources
     source_indices = []
