@@ -32,9 +32,9 @@ if model:
     featsize = 28 
     h1 = 4
     h2 = 2
-    lrasd=0.001
-    lrid=0.002
-    lrc=0.001
+    lrasd=0.0007
+    lrid=0.007
+    lrc=0.0007
     wd=0.0001
     diseasename = "Multi"
 else:
@@ -75,4 +75,29 @@ else:
     state =np.random.get_state()
     with open(root+diseasename+"Exp"+str(experiment)+"/deepND_experiment_numpy_random_state", 'wb') as f:
         pickle.dump(state, f)
-    
+
+###############################################################################################################################################
+"""LOADING NETWORKS"""
+###############################################################################################################################################
+network_names = ["PFC", "MDCBC","V1C", "SHA"]
+periods = ["1-3", "2-4", "3-5", "4-6", "5-7", "6-8", "7-9", "8-10", "9-11", "10-12", "11-13", "12-14", "13-15"]
+pfc08Mask = [i for i in range(network_count)]
+mdcbc08Mask = [i for i in range(network_count)]
+v1c08Mask = [i for i in range(network_count)]
+sha08Mask= [i for i in range(network_count)]
+
+for period in pfc08Mask:
+    pfcnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
+    pfcnetworkweights.append(torch.abs(torch.load((root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+
+for period in mdcbc08Mask:
+    mdcbcnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/MDCBC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
+    mdcbcnetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/MDCBC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+  
+for period in v1c08Mask:
+    v1cnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/V1C" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
+    v1cnetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/V1C" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+
+for period in sha08Mask:
+    shanetworks.append(torch.load((root + "/Data/EdgeTensors/PointEight/SHA" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
+    shanetworkweights.append(torch.abs(torch.load((root + "/Data//EdgeTensors/PointEight/SHA" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
