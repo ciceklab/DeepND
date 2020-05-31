@@ -47,7 +47,7 @@ if mode:
     experiment = 11
     if experiment < 10:
         experiment = "0"+str(experiment)
-    print("Generating results for ", diseasename," Exp: ", experiment)
+    print("Generating results for ", diseasename," Exp :", experiment)
     access_rights = 0o755
     try:
         os.mkdir(root+diseasename+"Exp"+str(experiment)+"Test", access_rights)
@@ -61,3 +61,16 @@ if mode:
     with open(root+diseasename+"Exp"+str(experiment)+"/deepND_experiment_numpy_random_state", 'rb') as f:
         state = pickle.load(f)
     np.random.set_state(state)
+else:
+    access_rights = 0o755
+    try:
+        os.mkdir(root+diseasename+"Exp"+str(experiment), access_rights)
+    except OSError:
+        print ("Creation of the directory for the results failed")
+    else:
+        print ("Successfully created the directory for the results")
+    torch.save(torch.get_rng_state(),root+diseasename+"Exp"+str(experiment)+"/deepND_experiment_torch_random_state")
+    state =np.random.get_state()
+    with open(root+diseasename+"Exp"+str(experiment)+'../deepND_experiment_numpy_random_state', 'wb') as f:
+        pickle.dump(state, f)
+    
