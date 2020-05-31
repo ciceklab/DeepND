@@ -32,10 +32,10 @@ if model:
     featsize = 28 
     h1 = 4
     h2 = 2
-    lrasd=0.0007
-    lrid=0.007
-    lrc=0.0007
-    wd=0.0001
+    lrasd = 0.0007
+    lrid = 0.007
+    lrc = 0.0007
+    wd = 0.0001
     diseasename = "Multi"
 else:
     if disease:
@@ -50,30 +50,30 @@ else:
 if mode:
     experiment = 11
     if experiment < 10:
-        experiment = "0"+str(experiment)
-    print("Generating results for ", diseasename," Exp :", experiment)
+        experiment = "0" + str(experiment)
+    print("Generating results for ", diseasename , " Exp :", experiment)
     try:
-        os.mkdir(root+diseasename+"Exp"+str(experiment)+"Test", access_rights)
+        os.mkdir(root + diseasename + "Exp" + str(experiment) + "Test", access_rights)
     except OSError:
         print ("Creation of the test directory failed")
     else:
         print ("Successfully created the test directory")
     # Load random states for reproducing test results
-    torch.set_rng_state(torch.load(root+diseasename+"Exp"+str(experiment)+"/deepND_experiment_torch_random_state"))
-    state =np.random.get_state()
-    with open(root+diseasename+"Exp"+str(experiment)+"/deepND_experiment_numpy_random_state", 'rb') as f:
+    torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
+    state = np.random.get_state()
+    with open(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'rb') as f:
         state = pickle.load(f)
     np.random.set_state(state)
 else:
     try:
-        os.mkdir(root+diseasename+"Exp"+str(experiment), access_rights)
+        os.mkdir(root + diseasename + "Exp" + str(experiment), access_rights)
     except OSError:
         print ("Creation of the directory for the results failed")
     else:
         print ("Successfully created the directory for the results")
-    torch.save(torch.get_rng_state(),root+diseasename+"Exp"+str(experiment)+"/deepND_experiment_torch_random_state")
-    state =np.random.get_state()
-    with open(root+diseasename+"Exp"+str(experiment)+"/deepND_experiment_numpy_random_state", 'wb') as f:
+    torch.save(torch.get_rng_state(),root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state")
+    state = np.random.get_state()
+    with open(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'wb') as f:
         pickle.dump(state, f)
 
 ###############################################################################################################################################
@@ -99,5 +99,19 @@ for period in v1c08Mask:
     v1cnetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/V1C" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
 
 for period in sha08Mask:
-    shanetworks.append(torch.load((root + "/Data/EdgeTensors/PointEight/SHA" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
-    shanetworkweights.append(torch.abs(torch.load((root + "/Data//EdgeTensors/PointEight/SHA" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+    shanetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/SHA" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
+    shanetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/SHA" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+
+for i in range(network_count):
+    pfcnetworks[i] = pfcnetworks[i].to(devices[pfcgpumask[i]])
+    pfcnetworkweights[i] = pfcnetworkweights[i].to(devices[pfcgpumask[i]])
+    mdcbcnetworks[i] = mdcbcnetworks[i].to(devices[mdcbcgpumask[i]])
+    mdcbcnetworkweights[i] = mdcbcnetworkweights[i].to(devices[mdcbcgpumask[i]])
+    v1cnetworks[i] = v1cnetworks[i].to(devices[v1cgpumask[i]])
+    v1cnetworkweights[i] = v1cnetworkweights[i].to(devices[v1cgpumask[i]])
+    shanetworks[i] = shanetworks[i].to(devices[shagpumask[i]])
+    shanetworkweights[i] = shanetworkweights[i].to(devices[shagpumask[i]])
+                             
+geneNames_all = pd.read_csv(root + "/Data/Brainspan/row-genes.txt", header = None)
+geneNames_all = geneNames_all[0].tolist()
+geneDict = constructGeneDictionary(root + "/Data/Brainspan/hugogenes_entrez.txt")
