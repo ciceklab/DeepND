@@ -17,7 +17,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
 
 root = "/" # PATH
 mode = 0 # 0 : Train | 1 : Test
-model = 0 # 0 : Single | 1 : Multi
+model_select = 0 # 0 : Single | 1 : Multi
 disease = 0 # 0 : ASD | 1 : ID
 
 network_count = 13
@@ -26,7 +26,7 @@ early_stop_enabled = 1
 early_stop_window = 7
 access_rights = 0o755
 
-if model:
+if model_select:
     featsizeid = 13 
     featsizeasd = 18
     featsize = 28 
@@ -37,6 +37,7 @@ if model:
     lrc = 0.0007
     wd = 0.0001
     diseasename = "Multi"
+    model = DeepND()
 else:
     if disease:
         input_size = 13
@@ -46,7 +47,8 @@ else:
         input_size = 18
         l_rate = 0.0007 
         diseasename = "ASD"
-  
+    model = DeepND_ST(featsize=input_size)
+    
 if mode:
     experiment = 11
     if experiment < 10:
