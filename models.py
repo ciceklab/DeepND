@@ -198,11 +198,11 @@ class DeepND(torch.nn.Module): # Multi Task DeepND
     def __init__(self):
         super(DeepND, self).__init__()
         self.unit = 15
-        torch.set_rng_state(torch.load("/mnt/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"/deepND_experiment_torch_random_state"))
+        torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
         self.commonmlp = nn.Linear(featsize, self.unit).to(devices[0])
-        torch.set_rng_state(torch.load("/mnt/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"/deepND_experiment_torch_random_state"))
+        torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
         self.ASDBranch= DeepND_ST(featsize=featsizeasd)  
-        torch.set_rng_state(torch.load("/mnt/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"/deepND_experiment_torch_random_state"))
+        torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
         self.IDBranch= DeepND_ST(featsize=featsizeid)        
       
     # data contains a packed structure: Features and first graph's edge indices
