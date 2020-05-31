@@ -17,6 +17,7 @@ mode = 0 # 0 : Train | 1 : Test
 model = 0 # 0 : Single | 1 : Multi
 disease = 0 # 0 : ASD | 1 : ID
 
+network_count = 13
 max_epoch = 1000
 early_stop_enabled = 1
 early_stop_window = 7
@@ -27,7 +28,6 @@ if model:
     featsize = 28 
     h1 = 4
     h2 = 2
-    network_count = 13
     lrasd=0.001
     lrid=0.002
     lrc=0.001
