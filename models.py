@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
-from torch.autograd import Variable
+
 
 class DeepND_ST(torch.nn.Module): # Single Task DeepND
     def __init__(self, featsize=20, unit=15):
