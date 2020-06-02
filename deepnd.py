@@ -484,9 +484,22 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 average_att_gold_e1asd[i] += torch.mean(model.ASDBranch.experts[g_bs_tada_intersect_indices_asd[0:46],i]).item()
                 average_att_gold_e1e2asd[i] += torch.mean(model.ASDBranch.experts[g_bs_tada_intersect_indices_asd[0:46+67],i]).item()
                 average_att_gold_negasd[i] += torch.mean(model.ASDBranch.experts[n_bs_tada_intersect_indices_asd,i]).item()
+                att_leak_prevention =  model.ASDBranch.experts[:,i]
+                att_leak_prevention[data_asd.train_mask] = 0.0
+                att_leak_prevention[data_asd.validation_mask] = 0.0
+                all_att_asd[i] += att_leak_prevention
+                
+                pre_att_buffer_asd = model.ASDBranch.expert_results[i]
+                pre_att_buffer_asd[data_asd.train_mask] = 0.0
+                pre_att_buffer_asd[data_asd.validation_mask] = 0.0
+                pre_att_asd[i] += pre_att_buffer_asd 
+            
+            #torch.save(model.ASDBranch.experts,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/ASD_experts"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pt")
+            
             # -------------------------------------------------------------
             fpr["micro"], tpr["micro"], _ = roc_curve(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1])
             aucs_id.append(auc(fpr["micro"], tpr["micro"]))                                            
+            print("ID AUC", auc(fpr["micro"], tpr["micro"]))
             print("ID AUC", auc(fpr["micro"], tpr["micro"]))
             aupr_id.append(average_precision_score(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1]))
             print("ID AUPR", aupr_id[-1])
@@ -500,6 +513,16 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 average_att_gold_e1id[i] += torch.mean(model.IDBranch.experts[g_bs_tada_intersect_indices_id[0:56],i]).item()
                 average_att_gold_e1e2id[i] += torch.mean(model.IDBranch.experts[g_bs_tada_intersect_indices_id[0:56+181],i]).item()
                 average_att_gold_negid[i] += torch.mean(model.IDBranch.experts[n_bs_tada_intersect_indices_id,i]).item()
+                att_leak_prevention =  model.IDBranch.experts[:,i]
+                att_leak_prevention[data_id.train_mask] = 0.0
+                att_leak_prevention[data_id.validation_mask] = 0.0
+                all_att_id[i] += att_leak_prevention
+                
+                pre_att_buffer_id = model.IDBranch.expert_results[i]
+                pre_att_buffer_id[data_id.train_mask] = 0.0
+                pre_att_buffer_id[data_id.validation_mask] = 0.0
+                pre_att_id[i] += pre_att_buffer_id
+            
             # -------------------------------------------------------------
             # Saving the model with the recommended method on "https://pytorch.org/tutorials/beginner/saving_loading_models.html"
             # To Load:
@@ -547,7 +570,7 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
 predictions_asd /= 200.0
 predictions_asd[g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= 5.0
 
-fpred = open("../predictasd.txt","w+")
+fpred = open("/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/predictasd.txt","w+")
 fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
 for index,row in enumerate(predictions_asd):
     if str(geneNames_all[index]) in geneDict:
@@ -560,7 +583,7 @@ fpred.close()
 predictions_id /= 200.0
 predictions_id[g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= 5.0
 
-fpred = open("../predictid.txt","w+")
+fpred = open("/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/predictid.txt","w+")
 fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
 for index,row in enumerate(predictions_id):
     if str(geneNames_all[index]) in geneDict:
@@ -570,7 +593,6 @@ for index,row in enumerate(predictions_id):
 fpred.close()
 
 #Experiment Stats
-f= open("../runreport_gcnmulti.txt","w+")
 f.write("Number of networks per region: %d\n" % network_count)
 print("Number of networks per region:" , network_count)
 
@@ -616,6 +638,10 @@ for i in range(len(average_attasd)):
     average_att_gold_e1asd[i] = average_att_gold_e1asd[i] / (trial*k*(k-1))
     average_att_gold_e1e2asd[i] = average_att_gold_e1e2asd[i] / (trial*k*(k-1))
     average_att_gold_negasd[i] = average_att_gold_negasd[i] / (trial*k*(k-1))
+    all_att_asd[i] = all_att_asd[i] /(trial*k*(k-1))
+    all_att_asd[i][g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= 5.0
+    pre_att_asd[i] = pre_att_asd[i] /(trial*k*(k-1))
+    pre_att_asd[i][g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= 5.0
 
 for i in range(network_count * 4):
     print("ASD Average Attention", i + 1 , " of All Runs:", average_attasd[i])
@@ -632,6 +658,10 @@ for i in range(len(average_attid)):
     average_att_gold_e1id[i] = average_att_gold_e1id[i] / (trial*k*(k-1))
     average_att_gold_e1e2id[i] = average_att_gold_e1e2id[i] / (trial*k*(k-1))
     average_att_gold_negid[i] = average_att_gold_negid[i] / (trial*k*(k-1))
+    all_att_id[i] = all_att_id[i] /(trial*k*(k-1))
+    all_att_id[i][g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= 5.0
+    pre_att_id[i] = pre_att_id[i] /(trial*k*(k-1))
+    pre_att_id[i][g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= 5.0
 
 for i in range(network_count * 4):
     print("ID Average Attention", i + 1 , " of All Runs:", average_attid[i])
@@ -654,9 +684,11 @@ for i in range(len(aupr_id)):
     f.write("ID AUPR:%f\n" % (aupr_id[i]))
 f.write("-"*20+"\n")
 for i in range(len(epoch_count)):
-    f.write("Epoch:%d\n" % (epoch_count[i]))    
+    f.write("ID AUPR:%f\n" % (epoch_count[i]))    
 
 f.close()
+# print("Generated results for Exp: ", experiment)
+print("Done in ", t , "hh:mm:ss." )
 
 model = model.eval()
 out1,out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
