@@ -261,20 +261,7 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
         
         for k2 in range(k-1): # K-FOLD Cross Validation
             print("Fold", k1+1, "_",  k2+1, "of Trial", j+1)
-            model.apply(unfreeze_layer)
-            if fresh:                
-                model.apply(weight_reset)
-                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=lrc, weight_decay=wd )   
-                optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=lrasd, weight_decay=wd )   
-                optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr=lrid, weight_decay=wd ) 
-            else:
-                model.load_state_dict(torch.load("../deepND_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
-                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=lrc/10.0, weight_decay=wd )   
-                optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=lrasd/10.0, weight_decay=wd )   
-                optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr=lrid, weight_decay=wd ) 
-  
-    
-            # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,  milestones=[150,175,200], gamma=0.5)
+            
             # Adjust masks - NOTE: Masks contain indices of samples. 
             # Example: if train mask contains 2 genes with indices 6 and 12, train mask should be --> train_mask = [6, 12]
             # Add leftout E1 genes to validation mask
@@ -296,7 +283,6 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             train_mask_asd = [item for item in train_mask_asd if item not in sorted(validation_mask_asd + test_mask_asd)]
             print("ASD Final Validation Mask Length:", len(validation_mask_asd))
             print("ASD Final Train Mask Length:", len(train_mask_asd))
-            #print("ASD AUC Mask Length:", len(data_asd.auc_mask))
             
             #Uncomment line below if you want to use sample weights
             sample_weights_asd = torch.ones((len(train_mask_asd)), dtype = torch.float).to(devices[0])
@@ -330,7 +316,6 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             train_mask_id = [item for item in train_mask_id if item not in sorted(validation_mask_id + test_mask_id)]
             print("ID  Final Validation Mask Length:", len(validation_mask_id))
             print("ID Final Train Mask Length:", len(train_mask_id))
-            #print("ID Mask Length:", len(data_id.auc_mask))
             
             #Uncomment line below if you want to use sample weights
             sample_weights_id = torch.ones((len(train_mask_id)), dtype = torch.float).to(devices[0])
@@ -348,38 +333,10 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             data_id.train_mask = torch.tensor(train_mask_id, dtype= torch.long)
             data_id.validation_mask = torch.tensor(validation_mask_id, dtype=torch.long)
             
-            old_loss = [100,100]
-            
-            early_stop_count_asd = 0
-            early_stop_count_id = 0
-            ASDFit = False
-            IDFit = False
-            
-            for epoch in range(max_epoch):
-                model = model.train()
-                optimizerc.zero_grad()
-                optimizerasd.zero_grad()
-                optimizerid.zero_grad()
-                out1,out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
-                
-                # You can adjust class weights using values in FloatTensor
-                loss1 = F.nll_loss(out1[data_asd.train_mask], data_asd.y1[data_asd.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
-                loss2 = F.nll_loss(out2[data_id.train_mask], data_id.y2[data_id.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
-                
-                loss1 = (loss1 * sample_weights_asd).mean()
-                loss2 = (loss2 * sample_weights_id).mean()
-                # As we have multiple branches, we set the "retain_graph=True"
-                loss1.backward(retain_graph=True)
-                loss2.backward(retain_graph=True)
-                
-                asdtloss.append(loss1.cpu().item())
-                idtloss.append(loss2.cpu().item())
-                
-                optimizerc.step()
-                optimizerasd.step()
-                optimizerid.step()
-                #scheduler.step()
-                #----------------------------------------------------------------------------------------#
+            if mode:
+                # Test mode
+                path = root + diseasename + "Exp" + str(experiment) + "test"
+                model.load_state_dict(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
                 model = model.eval()
                 with torch.no_grad():
                     out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
@@ -393,72 +350,122 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                     acc2 = correct2 / len(data_id.auc_mask)
                     accTrain1 = correctTrain1 / len(data_asd.train_mask)
                     accTrain2 = correctTrain2 / len(data_id.train_mask)
-                    
-                    valLoss = [F.nll_loss(out1[data_asd.auc_mask], data_asd.y1[data_asd.auc_mask]).mean(), F.nll_loss(out2[data_id.auc_mask], data_id.y2[data_id.auc_mask]).mean()]
-                    asdvloss.append(valLoss[0].cpu().item())
-                    idvloss.append(valLoss[1].cpu().item())
-                    
-                if epoch != 0 and epoch % 25 == 0:
-                    print('Val Acc:{:.4f}| Val Loss: ASD {:.4f}, ID {:.4f}| Train Acc: {:.4f}'.format(np.mean([acc1,acc2]),valLoss[0],valLoss[1], np.mean([accTrain1,accTrain2])))
+            else:
+                # Train mode
+                path = root + diseasename + "Exp" + str(experiment)
+                model.apply(unfreeze_layer)
+                model.apply(weight_reset)
+                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr = lrc, weight_decay = wd )   
+                optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr = lrasd, weight_decay = wd )   
+                optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr = lrid, weight_decay = wd ) 
                 
-                #if epoch == 100 and fresh:
-                #    #model.commonmlp.weight.requires_grad = False
-                #    #model.commonmlp.bias.requires_grad = False
-                #    optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=lrc/10.0, weight_decay=wd )
-                #    print("Common layer slowed down!")
+                old_loss = [100,100]
+            
+                early_stop_count_asd = 0
+                early_stop_count_id = 0
+                ASDFit = False
+                IDFit = False
+            
+                for epoch in range(max_epoch):
+                    model = model.train()
+                    optimizerc.zero_grad()
+                    optimizerasd.zero_grad()
+                    optimizerid.zero_grad()
+                    out1,out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                    
+                    # You can adjust class weights using values in FloatTensor
+                    loss1 = F.nll_loss(out1[data_asd.train_mask], data_asd.y1[data_asd.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
+                    loss2 = F.nll_loss(out2[data_id.train_mask], data_id.y2[data_id.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
+                    
+                    loss1 = (loss1 * sample_weights_asd).mean()
+                    loss2 = (loss2 * sample_weights_id).mean()
+                    # As we have multiple branches, we set the "retain_graph=True"
+                    loss1.backward(retain_graph=True)
+                    loss2.backward(retain_graph=True)
+                    
+                    asdtloss.append(loss1.cpu().item())
+                    idtloss.append(loss2.cpu().item())
+                    
+                    optimizerc.step()
+                    optimizerasd.step()
+                    optimizerid.step()
+                    #----------------------------------------------------------------------------------------#
+                    model = model.eval()
+                    with torch.no_grad():
+                        out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                        _, pred1 = out1.max(dim=1)
+                        _, pred2 = out2.max(dim=1)
+                        correct1 = pred1[data_asd.auc_mask].eq(data_asd.y1[data_asd.auc_mask]).sum().item()
+                        correct2 = pred2[data_id.auc_mask].eq(data_id.y2[data_id.auc_mask]).sum().item()
+                        correctTrain1 = pred1[data_asd.train_mask].eq(data_asd.y1[data_asd.train_mask]).sum().item()
+                        correctTrain2 = pred2[data_id.train_mask].eq(data_id.y2[data_id.train_mask]).sum().item()
+                        acc1 = correct1 / len(data_asd.auc_mask)
+                        acc2 = correct2 / len(data_id.auc_mask)
+                        accTrain1 = correctTrain1 / len(data_asd.train_mask)
+                        accTrain2 = correctTrain2 / len(data_id.train_mask)
+                        
+                        valLoss = [F.nll_loss(out1[data_asd.auc_mask], data_asd.y1[data_asd.auc_mask]).mean(), F.nll_loss(out2[data_id.auc_mask], data_id.y2[data_id.auc_mask]).mean()]
+                        asdvloss.append(valLoss[0].cpu().item())
+                        idvloss.append(valLoss[1].cpu().item())
+                    
+                    if epoch != 0 and epoch % 25 == 0:
+                        print('Val Acc:{:.4f}| Val Loss: ASD {:.4f}, ID {:.4f}| Train Acc: {:.4f}'.format(np.mean([acc1,acc2]),valLoss[0],valLoss[1], np.mean([accTrain1,accTrain2])))
     
-                # Early Stop Checks                
-                if early_stop_enabled:
-                    if valLoss[0] < old_loss[0]: # ASD Early fit
-                        early_stop_count_asd = 0
-                        old_loss[0] = valLoss[0]
-                    else:
-                        early_stop_count_asd += 1
-                        
-                    if early_stop_count_asd >= early_stop_window:
-                        if ASDFit:
-                            model.ASDBranch.apply(freeze_layer)
-                            model.commonmlp.apply(freeze_layer)
-                            optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=0.0, weight_decay=wd ) 
-                            optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=0.0, weight_decay=wd )
-                            optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=0.0, weight_decay=wd )
-                            print('ASD freezed! Val Loss: ASD {:.4f}, ID {:.4f}'.format(valLoss[0],valLoss[1]))
-                            early_stop_count_asd = float("-inf")                            
-                        else:
+                    # Early Stop Checks                
+                    if early_stop_enabled:
+                        if valLoss[0] < old_loss[0]: # ASD Early fit
                             early_stop_count_asd = 0
-                            print("Epoch:", epoch,", Loss ASD:",loss1.mean().item(),", Loss ID:",loss2.mean().item())
-                            print("ASD slowed down!")                            
-                            optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=lrasd/20.0, weight_decay=wd ) 
-                            optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=lrc/20.0, weight_decay=wd )
-                            ASDFit = True
-                        
-                    if valLoss[1] < old_loss[1]: # ID Early fit
-                        early_stop_count_id = 0
-                        old_loss[1] = valLoss[1]
-                    else:
-                        early_stop_count_id += 1 
-                        
-                    if early_stop_count_id >= early_stop_window:
-                        if IDFit:
-                            model.IDBranch.apply(freeze_layer)
-                            model.commonmlp.apply(freeze_layer)
-                            optimizerid = torch.optim.Adam( model.IDBranch.parameters(), lr=0.0, weight_decay=wd ) 
-                            optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=0.0, weight_decay=wd )
-                            print('ID freezed! Val Loss: ASD {:.4f}, ID {:.4f}'.format(valLoss[0],valLoss[1]))
-                            early_stop_count_id = float("-inf")   
+                            old_loss[0] = valLoss[0]
                         else:
+                            early_stop_count_asd += 1
+                            
+                        if early_stop_count_asd >= early_stop_window:
+                            if ASDFit:
+                                model.ASDBranch.apply(freeze_layer)
+                                model.commonmlp.apply(freeze_layer)
+                                optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=0.0, weight_decay=wd ) 
+                                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=0.0, weight_decay=wd )
+                                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=0.0, weight_decay=wd )
+                                print('ASD freezed! Val Loss: ASD {:.4f}, ID {:.4f}'.format(valLoss[0],valLoss[1]))
+                                early_stop_count_asd = float("-inf")                            
+                            else:
+                                early_stop_count_asd = 0
+                                print("Epoch:", epoch,", Loss ASD:",loss1.mean().item(),", Loss ID:",loss2.mean().item())
+                                print("ASD slowed down!")                            
+                                optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=lrasd/20.0, weight_decay=wd ) 
+                                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=lrc/20.0, weight_decay=wd )
+                                ASDFit = True
+                            
+                        if valLoss[1] < old_loss[1]: # ID Early fit
                             early_stop_count_id = 0
+                            old_loss[1] = valLoss[1]
+                        else:
+                            early_stop_count_id += 1 
+                            
+                        if early_stop_count_id >= early_stop_window:
+                            if IDFit:
+                                model.IDBranch.apply(freeze_layer)
+                                model.commonmlp.apply(freeze_layer)
+                                optimizerid = torch.optim.Adam( model.IDBranch.parameters(), lr=0.0, weight_decay=wd ) 
+                                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=0.0, weight_decay=wd )
+                                print('ID freezed! Val Loss: ASD {:.4f}, ID {:.4f}'.format(valLoss[0],valLoss[1]))
+                                early_stop_count_id = float("-inf")   
+                            else:
+                                early_stop_count_id = 0
+                                print("Epoch:", epoch,", Loss ASD:",loss1.mean().item(),", Loss ID:",loss2.mean().item())
+                                print("ID slowed down!")    
+                                optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr = lrid/20.0, weight_decay=wd ) 
+                                optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr = lrc/20.0, weight_decay=wd )
+                                IDFit = True
+                            
+                        if IDFit and ASDFit: 
                             print("Epoch:", epoch,", Loss ASD:",loss1.mean().item(),", Loss ID:",loss2.mean().item())
-                            print("ID slowed down!")    
-                            optimizerid = torch.optim.Adam( model.IDBranch.parameters(), lr=lrid/20.0, weight_decay=wd ) 
-                            optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=lrc/20.0, weight_decay=wd )
-                            IDFit = True
-                        
-                    if IDFit and ASDFit: 
-                        print("Epoch:", epoch,", Loss ASD:",loss1.mean().item(),", Loss ID:",loss2.mean().item())
-                        print("Training Done!")
-                        epoch_count.append(epoch)
-                        break
+                            print("Training Done!")
+                            # Saving the model with the recommended method on "https://pytorch.org/tutorials/beginner/saving_loading_models.html"
+                            torch.save(model.state_dict(), path + "/deepND_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth")    
+                            epoch_count.append(epoch)
+                            break
+                
             # -------------------------------------------------------------
             adjusted_mean_scores = (F.softmax(out1.cpu(),dim=1))[:,1]
             adjusted_mean_scores[data_asd.train_mask] = 0.0
@@ -484,6 +491,7 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 average_att_gold_e1asd[i] += torch.mean(model.ASDBranch.experts[g_bs_tada_intersect_indices_asd[0:46],i]).item()
                 average_att_gold_e1e2asd[i] += torch.mean(model.ASDBranch.experts[g_bs_tada_intersect_indices_asd[0:46+67],i]).item()
                 average_att_gold_negasd[i] += torch.mean(model.ASDBranch.experts[n_bs_tada_intersect_indices_asd,i]).item()
+                
                 att_leak_prevention =  model.ASDBranch.experts[:,i]
                 att_leak_prevention[data_asd.train_mask] = 0.0
                 att_leak_prevention[data_asd.validation_mask] = 0.0
@@ -493,8 +501,6 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 pre_att_buffer_asd[data_asd.train_mask] = 0.0
                 pre_att_buffer_asd[data_asd.validation_mask] = 0.0
                 pre_att_asd[i] += pre_att_buffer_asd 
-            
-            #torch.save(model.ASDBranch.experts,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/ASD_experts"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pt")
             
             # -------------------------------------------------------------
             fpr["micro"], tpr["micro"], _ = roc_curve(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1])
@@ -513,6 +519,7 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 average_att_gold_e1id[i] += torch.mean(model.IDBranch.experts[g_bs_tada_intersect_indices_id[0:56],i]).item()
                 average_att_gold_e1e2id[i] += torch.mean(model.IDBranch.experts[g_bs_tada_intersect_indices_id[0:56+181],i]).item()
                 average_att_gold_negid[i] += torch.mean(model.IDBranch.experts[n_bs_tada_intersect_indices_id,i]).item()
+                
                 att_leak_prevention =  model.IDBranch.experts[:,i]
                 att_leak_prevention[data_id.train_mask] = 0.0
                 att_leak_prevention[data_id.validation_mask] = 0.0
@@ -524,31 +531,13 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 pre_att_id[i] += pre_att_buffer_id
             
             # -------------------------------------------------------------
-            # Saving the model with the recommended method on "https://pytorch.org/tutorials/beginner/saving_loading_models.html"
-            # To Load:
-            # model = TheModelClass(*args, **kwargs)
-            # model.load_state_dict(torch.load(PATH))
-            torch.save(model.state_dict(), "../deepND_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth")
-            
+
             print("ASD Current Median AUC:" + str(np.median(aucs_asd)))
             print("ASD Current Median AUPR:" + str(np.median(aupr_asd)))    
             print("ID Current Median AUC:" + str(np.median(aucs_id)))
             print("ID Current Median AUPR:" + str(np.median(aupr_id))) 
             print("-"*10)
         
-    
-    # LEARNING CURVES
-    fig, ax = plt.subplots(figsize = (5 + 3,4))
-    ax.plot(asdtloss,color="navy")
-    ax.plot(asdvloss,color="darkorange")
-    ax.legend(["Train", "Valid"])
-    fig.savefig("../asdloss_trial"+str(j+1))
-
-    fig, ax = plt.subplots(figsize = (5 + 3,4))
-    ax.plot(idtloss,color="navy")
-    ax.plot(idvloss,color="darkorange")
-    ax.legend(["Train", "Valid"])
-    fig.savefig("../idloss_trial"+str(j+1))
     # -------------------------------------------------------------
     print("ASD Trial Mean AUC:" + str(np.mean(aucs_asd[-20:])))
     print("ASD Trial Mean AUPR:" + str(np.mean(aupr_asd[-20:])))    
@@ -567,10 +556,10 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
 ###############################################################################################################################################
    
 #ASD final Predictions
-predictions_asd /= 200.0
-predictions_asd[g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= 5.0
+predictions_asd /= float(trial*k*(k-1))
+predictions_asd[g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= float(k)
 
-fpred = open("/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/predictasd.txt","w+")
+fpred = open(path + "/predictasd.txt","w+")
 fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
 for index,row in enumerate(predictions_asd):
     if str(geneNames_all[index]) in geneDict:
@@ -580,10 +569,10 @@ for index,row in enumerate(predictions_asd):
 fpred.close()
 
 #ID final Predictions
-predictions_id /= 200.0
-predictions_id[g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= 5.0
+predictions_id /= float(trial*k*(k-1))
+predictions_id[g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= float(k)
 
-fpred = open("/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/predictid.txt","w+")
+fpred = open(path + "/predictid.txt","w+")
 fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
 for index,row in enumerate(predictions_id):
     if str(geneNames_all[index]) in geneDict:
@@ -626,7 +615,6 @@ print("(ID)Meadian of AUPRs of All Runs:", np.median(aupr_id) )
 
 t = timedelta(seconds=(time.time()-init_time))
 f.write("\nDone in %s hh:mm:ss.\n" % t )
-print("Done in ", t , "hh:mm:ss." )
 
 f.write("*"*80+"\n") 
 
@@ -687,7 +675,7 @@ for i in range(len(epoch_count)):
     f.write("ID AUPR:%f\n" % (epoch_count[i]))    
 
 f.close()
-# print("Generated results for Exp: ", experiment)
+print("Generated DeepND results for Exp: ", experiment)
 print("Done in ", t , "hh:mm:ss." )
 
 model = model.eval()
@@ -763,18 +751,18 @@ for i in range(network_count * 3,network_count * 4):
     heatmap5[3,i - network_count * 3] = average_att_gold_negasd[i]
     heatmap6[3,i-network_count*3,:] = all_att_asd[i]
     
-torch.save(heatmap,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_tensor_asd.pt");
-torch.save(heatmap2,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_gold_tensor_asd.pt");
-torch.save(heatmap3,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_gold_e1_tensor_asd.pt");
-torch.save(heatmap4,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_gold_e1e2_tensor_asd.pt");
-torch.save(heatmap5,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_gold_neg_tensor_asd.pt");
-torch.save(heatmap6,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_all_asd.pt");
+torch.save(heatmap, path + "/heatmap_tensor_asd.pt");
+torch.save(heatmap2, path + "/heatmap_gold_tensor_asd.pt");
+torch.save(heatmap3, path + "/heatmap_gold_e1_tensor_asd.pt");
+torch.save(heatmap4, path + "/heatmap_gold_e1e2_tensor_asd.pt");
+torch.save(heatmap5, path + "/heatmap_gold_neg_tensor_asd.pt");
+torch.save(heatmap6, path + "/heatmap_all_asd.pt");
 
 heatmap7 = all_att_asd
-torch.save(heatmap7,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_flat_all_asd.pt");
+torch.save(heatmap7, path + "/heatmap_flat_all_asd.pt");
 
 heatmap8 = pre_att_asd
-torch.save(heatmap8,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_pre_att_asd.pt");
+torch.save(heatmap8, path + "/heatmap_pre_att_asd.pt");
 ## ID
 heatmap = torch.zeros(4, network_count,dtype=torch.float)
 heatmap2 = torch.zeros(4, network_count,dtype=torch.float)
@@ -821,15 +809,15 @@ for i in range(network_count * 3,network_count * 4):
     heatmap5[3,i - network_count * 3] = average_att_gold_negid[i]
     heatmap6[3,i-network_count*3,:] = all_att_id[i]
     
-torch.save(heatmap, root + "/MultiExp"+str(experiment)+"test/heatmap_tensor_id.pt");
-torch.save(heatmap2, root + "/MultiExp"+str(experiment)+"test/heatmap_gold_tensor_id.pt");
-torch.save(heatmap3,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_gold_e1_tensor_id.pt");
-torch.save(heatmap4,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_gold_e1e2_tensor_id.pt");
-torch.save(heatmap5,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_gold_neg_tensor_id.pt");
-torch.save(heatmap6,"/media/hdd3/ilayda/gcn_exp_results/MultiExp"+str(experiment)+"test/heatmap_all_id.pt");
+torch.save(heatmap, path + "/heatmap_tensor_id.pt");
+torch.save(heatmap2, path + "/heatmap_gold_tensor_id.pt");
+torch.save(heatmap3, path + "/heatmap_gold_e1_tensor_id.pt");
+torch.save(heatmap4, path + "/heatmap_gold_e1e2_tensor_id.pt");
+torch.save(heatmap5, path + "/heatmap_gold_neg_tensor_id.pt");
+torch.save(heatmap6, path + "/heatmap_all_id.pt");
 
 heatmap7 = all_att_id
-torch.save(heatmap7, root + "/MultiExp"+str(experiment)+"test/heatmap_flat_all_id.pt");
+torch.save(heatmap7, path + "/heatmap_flat_all_id.pt");
 
 heatmap8 = pre_att_id
-torch.save(heatmap8, root + "/MultiExp"+str(experiment)+"test/heatmap_pre_att_id.pt");
+torch.save(heatmap8, path + "/heatmap_pre_att_id.pt");
