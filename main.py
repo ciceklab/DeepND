@@ -42,8 +42,9 @@ if mode:
     if experiment < 10:
         experiment = "0" + str(experiment)
     print("Generating results for ", diseasename , " Exp :", experiment)
+    path = root + diseasename + "Exp" + str(experiment) + "Test"
     try:
-        os.mkdir(root + diseasename + "Exp" + str(experiment) + "Test", access_rights)
+        os.mkdir(path, access_rights)
     except OSError:
         print ("Creation of the test directory failed")
     else:
@@ -55,8 +56,9 @@ if mode:
         state = pickle.load(f)
     np.random.set_state(state)
 else:
+    path = root + diseasename + "Exp" + str(experiment)
     try:
-        os.mkdir(root + diseasename + "Exp" + str(experiment), access_rights)
+        os.mkdir(path, access_rights)
     except OSError:
         print ("Creation of the directory for the results failed")
     else:
