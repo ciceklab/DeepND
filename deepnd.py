@@ -335,7 +335,6 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             
             if mode:
                 # Test mode
-                path = root + diseasename + "Exp" + str(experiment) + "test"
                 model.load_state_dict(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
                 model = model.eval()
                 with torch.no_grad():
@@ -352,7 +351,6 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                     accTrain2 = correctTrain2 / len(data_id.train_mask)
             else:
                 # Train mode
-                path = root + diseasename + "Exp" + str(experiment)
                 model.apply(unfreeze_layer)
                 model.apply(weight_reset)
                 optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr = lrc, weight_decay = wd )   
