@@ -29,67 +29,66 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
             # PFC
             layers = nn.ModuleList()
             for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True) )
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False) )
+                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[pfcgpumask[i]]))
+                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[pfcgpumask[i]]))
                 if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True) )
+                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[pfcgpumask[i]]))
                 else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True) )
+                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[pfcgpumask[i]]))
             if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)) )
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2) )
-                
+                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[pfcgpumask[i]]))
+                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[pfcgpumask[i]]))                
             self.pfcnet.append(layers)
             
         for i in range(network_count):
             # MDCBC
             layers = nn.ModuleList()
             for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True))
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False) )
+                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
+                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[mdcbcgpumask[i]]))
                 if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True))
+                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
                 else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True))
+                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
             if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)))
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2))
-                
+                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[mdcbcgpumask[i]]))
+                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[mdcbcgpumask[i]]))
             self.mdcbcnet.append(layers)
+            
         for i in range(network_count):
             # V1C
             layers = nn.ModuleList()
             for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True))
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False))
+                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[v1cgpumask[i]]))
+                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[v1cgpumask[i]]))
                 if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True))
+                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[v1cgpumask[i]]))
                 else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True))
+                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[v1cgpumask[i]]))
             if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)) )
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2) )
-                
+                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[v1cgpumask[i]]))
+                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[v1cgpumask[i]]))
             self.v1cnet.append(layers)
+            
         for i in range(network_count):
             # SHA
             layers = nn.ModuleList()
             for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True) )
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False) )
+                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[shagpumask[i]]))
+                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[shagpumask[i]]))
                 if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True) )
+                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[shagpumask[i]]))
                 else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True) )
+                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[shagpumask[i]]))
             if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)) )
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2) )
-                
+                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[shagpumask[i]]))
+                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[shagpumask[i]]))
             self.shanet.append(layers)    
+        
         self.gating = nn.Linear(featsize, network_count * 4).to(devices[0])
         self.gating_weights = self.gating.weight
         
-    def forward(self,flatten, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights):
+    def forward(self,flatten, features,pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights):
         
         # Networks
         pfcconcatlist = []
@@ -97,10 +96,10 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         v1cconcatlist = []
         shaconcatlist = []
         for i in range(network_count):
-            pfcconcatlist.append(torch.zeros((data.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True) )
-            mdcbcconcatlist.append(torch.zeros((data.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True) )
-            v1cconcatlist.append(torch.zeros((data.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True) )
-            shaconcatlist.append(torch.zeros((data.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True) )
+            pfcconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[pfcgpumask[i]]))
+            mdcbcconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[mdcbcgpumask[i]]))
+            v1cconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[v1cgpumask[i]]))
+            shaconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[shagpumask[i]]))
         expert_results = []
         
         for i in range(network_count):
@@ -170,18 +169,17 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
                 
         for i in range(len(expert_results)):
             expert_results[i] = F.log_softmax(expert_results[i], dim = 1)
-            expert_results[i] = expert_results[i]
+            expert_results[i] = expert_results[i].to(devices[0]) 
 
-        weights = self.gating(features[0])
+        weights = self.gating(features)
         weights = F.softmax(weights, dim = 1)
         
         self.experts = weights
-        self.gating_weights = self.gating.weight
-        extended = torch.zeros((data.x.shape[0], len(expert_results)), dtype = torch.float, requires_grad = True)
+        extended = torch.zeros((data_asd.x.shape[0], len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
         for i in range(len(expert_results)):
             extended[:, i] = expert_results[i][:,1] 
         
-        extended2 = torch.zeros((data.x.shape[0], len(expert_results)), dtype = torch.float, requires_grad = True)
+        extended2 = torch.zeros((data_asd.x.shape[0], len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
 
         for i in range(len(expert_results)):
             extended2[:, i] = expert_results[i][:,0]
@@ -189,10 +187,11 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         results = torch.sum(weights * extended, dim = 1)
         results2 = torch.sum(weights * extended2, dim = 1)
         
-        final = torch.zeros( (data.x.shape[0], 2), dtype = torch.float, requires_grad = True)
+        final = torch.zeros( (data_asd.x.shape[0], 2), dtype = torch.float, requires_grad = True).to(devices[0])
         final[:, 1] = results
         final[:, 0] = results2
         return final
+        
         
 class DeepND(torch.nn.Module): # Multi Task DeepND
     def __init__(self):
@@ -214,7 +213,7 @@ class DeepND(torch.nn.Module): # Multi Task DeepND
         flat = F.leaky_relu(flat, negative_slope=1.5)
         flatten = []
         for i in range(len(devices)):
-            flatten.append(flat)
+            flatten.append(flat.to(devices[i]))
                 
         final1 = self.ASDBranch(flatten, asdfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
         final2 = self.IDBranch(flatten, idfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
