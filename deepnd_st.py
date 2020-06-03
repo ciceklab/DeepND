@@ -88,7 +88,7 @@ print("CUDA Device Count:",torch.cuda.device_count())
 ###############################################################################################################################################
 """FEATURES"""
 ###############################################################################################################################################
-row_genes = krishnan_rows.values[:,0]
+row_genes = geneNames_all.values[:,0]
 if disease:
     features = np.load(root + "/Data/ID_TADA_Features.npy")
 else:
