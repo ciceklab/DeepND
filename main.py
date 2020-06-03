@@ -14,6 +14,7 @@ import pickle
 
 import os 
 os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
+
 if model_select:
     featsizeid = 13 
     featsizeasd = 18
@@ -38,7 +39,7 @@ else:
     model = DeepND_ST(featsize=input_size)
     
 if mode:
-    experiment = 11
+    experiment = 1
     if experiment < 10:
         experiment = "0" + str(experiment)
     print("Generating results for ", diseasename , " Exp :", experiment)
