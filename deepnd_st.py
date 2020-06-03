@@ -12,12 +12,12 @@ Ankara, 2020
 
 if disease:
     # ID Validation
-    pos_gold_standards = pd.read_csv("/mnt/ilayda/ilayda_workspace/idSetDec25/id_pos_gold_set_dec25.csv")
-    neg_gold_standards = pd.read_csv("/mnt/ilayda/ilayda_workspace/idSetDec25/id_neg_gold_set_dec25.csv")
+    pos_gold_standards = pd.read_csv(root + "/Data/ID_Pos_Gold_Standards.csv")
+    neg_gold_standards = pd.read_csv(root + "/Data/ID_Neg_Gold_Standards.csv")
 else:
     # ASD Validation
-    pos_gold_standards = pd.read_csv("/mnt/oguzhan/oguzhan_workspace/Krishnan/Krishnan_New_Pos_Gold_Standards.csv")
-    neg_gold_standards = pd.read_csv("/mnt/oguzhan/oguzhan_workspace/Krishnan/Krishnan_New_Neg_Gold_Standards.csv")
+    pos_gold_standards = pd.read_csv(root + "/Data/ASD_Pos_Gold_Standards.csv")
+    neg_gold_standards = pd.read_csv(root + "/Data/ASD_Neg_Gold_Standards.csv")
 
 pos_gold_std = pos_gold_standards.values
 neg_gold_std = neg_gold_standards.values
@@ -75,15 +75,24 @@ neg_fold_size = math.ceil(neg_gene_count / k)
 print("E1 Gene Count:", e1_gene_count)
 print("E2 Gene Count:", e2_gene_count)
 print("E3E4 Gene Count:", e3e4_gene_count)
+
+# Shuffle all genes
+np.random.set_state(state)
+e1_perm = np.random.permutation(e1_gene_count)
+e2_perm = np.random.permutation(e2_gene_count)
+e3e4_perm = np.random.permutation(e3e4_gene_count)
+neg_perm = np.random.permutation(neg_gene_count)
+
+
 print("CUDA Device Count:",torch.cuda.device_count())
 ###############################################################################################################################################
 """FEATURES"""
 ###############################################################################################################################################
 row_genes = krishnan_rows.values[:,0]
 if disease:
-    features = np.load("/mnt/ilayda/ilayda_workspace/id_TADA_features13zeros.npy")
+    features = np.load(root + "/Data/ID_TADA_Features.npy")
 else:
-    features = np.load("/mnt/oguzhan/oguzhan_workspace/TADA/TADA_features_reduced.npy")
+    features = np.load(root + "/Data/ASD_TADA_Features.npy")
 
 features = torch.from_numpy(features).float()
 features = (features - torch.mean(features,0)) / (torch.std(features,0))
@@ -112,7 +121,6 @@ for i in range (len(devices)):
 """MODEL CONSTRUCTION"""
 ###############################################################################################################################################
 model = DeepND_ST(featsize=input_size, unit=input_size)
-
 for i in range(network_count * 4):
     average_att.append(0.0)
     average_att_gold.append(0.0)
@@ -127,25 +135,13 @@ for i in range(network_count * 4):
 aucs = []
 aupr = []
 UsandPs = []
-mean_scores = torch.zeros((len(geneNames_all),1), dtype = torch.float)      
-
-# Shuffle all genes
-with open("/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"/deepND_experiment_numpy_random_state", 'rb') as f:
-   state = pickle.load(f)
-np.random.set_state(state)
-
-e1_perm = np.random.permutation(e1_gene_count)
-e2_perm = np.random.permutation(e2_gene_count)
-e3e4_perm = np.random.permutation(e3e4_gene_count)
-neg_perm = np.random.permutation(neg_gene_count)
-
+predictions = torch.zeros((len(geneNames_all),1), dtype = torch.float)      
 usage = 0
 cached = 0
+
 f= open("/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/runreport.txt","w+")
 f.write("This file contains only test results i.e. no training process.")
-###############################################################################################################################################
-"""TESTING!!"""
-###############################################################################################################################################
+
 trial = 10
 epoch_count = []       
 for j in range(trial): # 10 here means Run count. Run given times and calculate average AUC found from each run.
