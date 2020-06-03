@@ -15,10 +15,11 @@ from torch_geometric.nn import GCNConv
 
 
 class DeepND_ST(torch.nn.Module): # Single Task DeepND
-    def __init__(self, featsize=20, unit=15):
+    def __init__(self, featsize=20, unit=15, genesize = 25825):
         super(DeepND_ST, self).__init__()
         self.unit = unit
         self.gcn_k = 1
+        self.genes = genesize
         
         self.pfcnet = nn.ModuleList()
         self.mdcbcnet = nn.ModuleList()
@@ -96,10 +97,10 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         v1cconcatlist = []
         shaconcatlist = []
         for i in range(network_count):
-            pfcconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[pfcgpumask[i]]))
-            mdcbcconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[mdcbcgpumask[i]]))
-            v1cconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[v1cgpumask[i]]))
-            shaconcatlist.append(torch.zeros((data_asd.x.shape[0], self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[shagpumask[i]]))
+            pfcconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[pfcgpumask[i]]))
+            mdcbcconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[mdcbcgpumask[i]]))
+            v1cconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[v1cgpumask[i]]))
+            shaconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[shagpumask[i]]))
         expert_results = []
         
         for i in range(network_count):
@@ -175,11 +176,11 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         weights = F.softmax(weights, dim = 1)
         
         self.experts = weights
-        extended = torch.zeros((data_asd.x.shape[0], len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
+        extended = torch.zeros((self.genes, len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
         for i in range(len(expert_results)):
             extended[:, i] = expert_results[i][:,1] 
         
-        extended2 = torch.zeros((data_asd.x.shape[0], len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
+        extended2 = torch.zeros((self.genes, len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
 
         for i in range(len(expert_results)):
             extended2[:, i] = expert_results[i][:,0]
@@ -187,7 +188,7 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         results = torch.sum(weights * extended, dim = 1)
         results2 = torch.sum(weights * extended2, dim = 1)
         
-        final = torch.zeros( (data_asd.x.shape[0], 2), dtype = torch.float, requires_grad = True).to(devices[0])
+        final = torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[0])
         final[:, 1] = results
         final[:, 0] = results2
         return final
