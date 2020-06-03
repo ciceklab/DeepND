@@ -188,10 +188,7 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
         
         for k2 in range(k-1): # K-FOLD Cross Validation
             print("Fold", k1+1, "_",  k2+1, "of Trial", j+1)
-           
-            model.load_state_dict(torch.load("/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"/deepND_ST_"+diseasename+"_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth", 
-                map_location=lambda storage, location: 'cpu'))
-            
+         
             validation_mask = [e1_gene_indices[index] for index in k_e1_perm[k2 * e1_fold_size: min(e1_gene_count, (k2 + 1) * e1_fold_size) ] ]
 
             # Add negative genes to validation mask
@@ -200,8 +197,6 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             
             print('Validation Gene(s):', [gene_names_list[i] for i in validation_mask])
             f.write("Validation Gene(s):%s\n" % ([gene_names_list[i] for i in validation_mask]) )
-            
-            #print("Supposed AUC Mask Length:", len(data.auc_mask))
             validation_mask += [e2_gene_indices[index] for index in k_e2_perm[(i) * e2_fold_size: min(e2_gene_count, (i + 1) * e2_fold_size) ] ] 
             validation_mask += [e3e4_gene_indices[index] for index in k_e3e4_perm[(i) * e3e4_fold_size: min(e3e4_gene_count, (i + 1) * e3e4_fold_size) ] ] 
         
@@ -231,23 +226,76 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 
             data.train_mask = torch.tensor(train_mask, dtype= torch.long)
             data.validation_mask = torch.tensor(validation_mask, dtype=torch.long)
-
-            model = model.eval()
-            with torch.no_grad():
-                out = model(features, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
-                _, pred = out.max(dim=1)
-                correct = pred[data.auc_mask].eq(data.y[data.auc_mask]).sum().item()
-                correctTrain = pred[data.train_mask].eq(data.y[data.train_mask]).sum().item()
-                acc = correct / len(data.auc_mask)
-                accTrain = correctTrain / len(data.train_mask)
-                valLoss = (F.nll_loss(out[data.auc_mask], data.y[data.auc_mask])).to(devices[1])
-                vloss.append(valLoss.cpu().item())
+            if mode:
+                #Test Mode
+                model.load_state_dict(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_ST_"+diseasename+"_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
+                model = model.eval()
+                with torch.no_grad():
+                    out = model(features, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                    _, pred = out.max(dim=1)
+                    correct = pred[data.auc_mask].eq(data.y[data.auc_mask]).sum().item()
+                    correctTrain = pred[data.train_mask].eq(data.y[data.train_mask]).sum().item()
+                    acc = correct / len(data.auc_mask)
+                    accTrain = correctTrain / len(data.train_mask)
+                    valLoss = (F.nll_loss(out[data.auc_mask], data.y[data.auc_mask])).to(devices[1])
+                    vloss.append(valLoss.cpu().item())
+            else:
+                model.apply(weight_reset)
+                optimizer = torch.optim.Adam(model.parameters(), lr=l_rate, weight_decay=0.0001)
+                for epoch in range(max_epoch):
+                    model = model.train()
+                    optimizer.zero_grad()
+                    out = model(features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                    regloss = 0.0
+                    loss = (F.nll_loss(out[data.train_mask], data.y[data.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[1]))).to(devices[1]) # You can adjust class weights using values in FloatTensor
+                    for param in model.parameters():
+                        regloss += torch.sum(param.to(devices[1]) ** 2 ) #L2 Reg
+                    regloss *= lbd
+                    loss += regloss
+            
+                    #Uncomment section below and comment out 3 lines above to enable sample weights.
+                    loss = loss * sample_weights
+                    loss.mean().backward()
+                    tloss.append(loss.mean().cpu().item())
+                    optimizer.step()
+    
+                    model = model.eval()
+                    regloss = 0.0
+                    with torch.no_grad():
+                        out = model(features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                        _, pred = out.max(dim=1)
+                        correct = pred[data.auc_mask].eq(data.y[data.auc_mask]).sum().item()
+                        correctTrain = pred[data.train_mask].eq(data.y[data.train_mask]).sum().item()
+                        acc = correct / len(data.auc_mask)
+                        accTrain = correctTrain / len(data.train_mask)
+                        valLoss = (F.nll_loss(out[data.auc_mask], data.y[data.auc_mask])).to(devices[1])
+                        asdvloss.append(valLoss.cpu().item())
+                        for param in model.parameters():
+                            #regloss += torch.sum(torch.abs(param.to(devices[1]))) # L1 Reg
+                            regloss += torch.sum(param.to(devices[1]) ** 2 ) #L2 Reg
+                        regloss *= lbd
+                        valLoss += regloss
+            
+                    if epoch != 0 and epoch % 25 == 0:
+                        print('Validation Accuracy: {:.4f}, Validation Loss: {:.4f} Train Accuracy: {:.4f} Train Loss: {:.4f}'.format(acc,valLoss, accTrain, loss.mean().item()))
                 
+                    # Early Stop Checks
+                    if early_stop_enabled:
+                        if valLoss < old_loss:
+                            early_stop_count = 0
+                            old_loss = valLoss
+                        else:
+                            early_stop_count += 1
+                            if early_stop_count == early_stop_window:
+                                print("Epoch:", epoch, ", Loss:",loss.mean().item())
+                                break
+        
+                torch.save(model.state_dict(), path + "/deepND_ST_"+diseasename+"_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth") 
             # -------------------------------------------------------------
             adjusted_mean_scores = (torch.exp(out.cpu()))[:,1]
             adjusted_mean_scores[data.train_mask] = 0.0
             adjusted_mean_scores[data.auc_mask] = 0.0
-            mean_scores[:,0] += adjusted_mean_scores
+            predictions[:,0] += adjusted_mean_scores
             # -------------------------------------------------------------
             fpr["micro"], tpr["micro"], _ = roc_curve(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])
             precision, recall, thresholds = precision_recall_curve(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])
@@ -281,11 +329,12 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 pre_att += pre_att_buffer 
             
             # ------------------------------------------------------------- 
-            print("-"*10)
-        
-    # -------------------------------------------------------------
+    print("-"*10)
     print(diseasename+" Trial Mean AUC:" + str(np.mean(aucs[-20:])))
     print(diseasename+" Trial Mean AUPR:" + str(np.mean(aupr[-20:])))    
+    print("-"*10)
+    print(diseasename+" Current Median AUC:" + str(np.median(aucs)))
+    print(diseasename+" Current Median AUPR:" + str(np.median(aupr)))    
 
     print("-"*80)
 ###############################################################################################################################################    
@@ -293,12 +342,12 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
 ###############################################################################################################################################
    
 #ASD final Predictions
-mean_scores /= 200.0
-mean_scores[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= 5.0
+predictions /= float(trial*k*(k-1))
+predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
 
 fpred = open("/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/predict.txt","w+")
 fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
-for index,row in enumerate(mean_scores):
+for index,row in enumerate(predictions):
     if str(geneNames_all[index]) in geneDict:
         fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0   ) )
     else:
@@ -307,7 +356,6 @@ fpred.close()
 
 #Experiment Stats
 f.write("Disease : %s\n" % diseasename)
-
 f.write("Number of networks per region: %d\n" % network_count)
 print("Number of networks per region:" , network_count)
 
@@ -327,10 +375,8 @@ print("Meadian of AUCs of All Runs:", np.median(aupr) )
 
 t = timedelta(seconds=(time.time()-init_time))
 f.write("\nDone in %s hh:mm:ss.\n" % t )
-print("Done in ", t , "hh:mm:ss." )
 
 f.write("*"*80+"\n") 
-
 for i in range(len(average_att)):
     average_att[i] = average_att[i] / (trial*k*(k-1))
     average_att_gold[i] = average_att_gold[i] / (trial*k*(k-1))
@@ -340,9 +386,9 @@ for i in range(len(average_att)):
     average_att_gold_e1e2[i] = average_att_gold_e1e2[i] / (trial*k*(k-1))
     average_att_gold_neg[i] = average_att_gold_neg[i] / (trial*k*(k-1))
     all_att[i] = all_att[i] /(trial*k*(k-1))
-    all_att[i][g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= 5.0
+    all_att[i][g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
     pre_att[i] = pre_att[i] /(trial*k*(k-1))
-    pre_att[i][g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= 5.0
+    pre_att[i][g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
 
 for i in range(len(average_att)):
     print("Average Attention", i + 1 , " of All Runs:", average_att[i])
@@ -358,7 +404,6 @@ f.write("-"*20+"\n")
 for i in range(len(aupr)):
     f.write("%s AUPR:%f\n" % (diseasename , aupr[i]))    
 f.write("-"*20+"\n") 
-
 f.close()
 print("Generated results for ", diseasename, " Exp: ", experiment)
 print("Done in ", t , "hh:mm:ss." )
@@ -382,9 +427,7 @@ for i in range(network_count):
     heatmap4[0,i] = average_att_gold_e1e2[i]
     heatmap5[0,i] = average_att_gold_neg[i]
     heatmap6[0,i,:] = all_att[i]
-
-    
-    
+        
 #heatmap[1,2:] = average_att[7:12]
 for i in range(network_count, network_count * 2):
     heatmap[1,i - network_count] = average_att[i]
@@ -411,15 +454,15 @@ for i in range(network_count * 3,network_count * 4):
     heatmap5[3,i - network_count * 3] = average_att_gold_neg[i]
     heatmap6[3,i-network_count*3,:] = all_att[i]
     
-torch.save(heatmap,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_tensor.pt");
-torch.save(heatmap2,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_gold_tensor.pt");
-torch.save(heatmap3,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_gold_e1_tensor.pt");
-torch.save(heatmap4,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_gold_e1e2_tensor.pt");
-torch.save(heatmap5,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_gold_neg_tensor.pt");
-torch.save(heatmap6,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_all.pt");
+torch.save(heatmap, path + "/heatmap_tensor.pt");
+torch.save(heatmap2, path + "/heatmap_gold_tensor.pt");
+torch.save(heatmap3, path + "/heatmap_gold_e1_tensor.pt");
+torch.save(heatmap4, path + "/heatmap_gold_e1e2_tensor.pt");
+torch.save(heatmap5, path + "/heatmap_gold_neg_tensor.pt");
+torch.save(heatmap6, path + "/heatmap_all.pt");
 
 heatmap7 = all_att
-torch.save(heatmap7,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_flat_all.pt");
+torch.save(heatmap7, path + "/heatmap_flat_all.pt");
 
 heatmap8 = pre_att
-torch.save(heatmap8,"/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/heatmap_pre_att_all.pt");
+torch.save(heatmap8, path + "/heatmap_pre_att_all.pt");
