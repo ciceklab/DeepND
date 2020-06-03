@@ -202,9 +202,11 @@ predictions_asd = torch.zeros(commonfeatures.x.shape[0],1)
 predictions_id = torch.zeros(commonfeatures.x.shape[0],1)
 # Emtpy lists for tracking performance metrics and memory usage
 aupr_asd = []
-aucs_asd = []  
+aucs_asd = [] 
+up_asd = []
 aupr_id = []
 aucs_id = []  
+up_id =[]
 usage = 0
 cached = 0
 
@@ -481,6 +483,9 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             aupr_asd.append(average_precision_score(data_asd.y1.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1]))
             print("ASD AUPR", aupr_asd[-1])
             
+            u,p = mannwhitneyu((F.softmax(out1.cpu()[data_asd.e1mask, :],dim=1))[:,1],(F.softmax(out1.cpu()[data_asd.negmask, :],dim=1))[:,1])
+            up_asd.append([u,p])
+            
             for i in range(network_count * 4):
                 average_attasd[i] += torch.mean(model.ASDBranch.experts[:,i]).item()
                 stddev_attasd[i] += model.ASDBranch.experts[:,i].std().item()
@@ -507,8 +512,10 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             print("ID AUC", auc(fpr["micro"], tpr["micro"]))
             aupr_id.append(average_precision_score(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1]))
             print("ID AUPR", aupr_id[-1])
-            print("."*10)
-        
+            
+            u,p = mannwhitneyu((F.softmax(out2.cpu()[data_id.e1mask, :],dim=1))[:,1],(F.softmax(out2.cpu()[data_id.negmask, :],dim=1))[:,1])
+            up_id.append([u,p])
+
             for i in range(network_count * 4):
                 average_attid[i] += torch.mean(model.IDBranch.experts[:,i]).item()
                 stddev_attid[i] += model.IDBranch.experts[:,i].std().item()
@@ -529,7 +536,7 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
                 pre_att_id[i] += pre_att_buffer_id
             
             # -------------------------------------------------------------
-
+            print("."*10)
             print("ASD Current Median AUC:" + str(np.median(aucs_asd)))
             print("ASD Current Median AUPR:" + str(np.median(aupr_asd)))    
             print("ID Current Median AUC:" + str(np.median(aucs_id)))
