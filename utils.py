@@ -241,11 +241,10 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
                 fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
         fpred.close()
                                  
-def writeExperimentSatats( aucs, aupr, diseasename, f = NULL, root = NULL, diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13,
-                          average_att, average_att_gold):
-    if (f == NULL) or f.closed:
-         f = open( root +diseasename+"Exp"+str(experiment)+"test/runreport.txt","w")
-    
+def writeExperimentSatats( aucs, aupr, root = NULL, diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
+    f = open( root +diseasename+"Exp"+str(experiment)+"test/runreport.txt","w")
+    if not mode : 
+        f.write("This file contains only test results i.e. no training process.")
     #Experiment Stats
     f.write("Disease : %s\n" % diseasename)
     f.write("Number of networks per region: %d\n" % network_count)
