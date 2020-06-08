@@ -15,28 +15,8 @@ import pickle
 import os 
 os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
 
-if model_select:
-    featsizeid = 13 
-    featsizeasd = 18
-    featsize = 28 
-    h1 = 4
-    h2 = 2
-    lrasd = 0.0007
-    lrid = 0.007
-    lrc = 0.0007
-    wd = 0.0001
-    diseasename = "Multi"
-    model = DeepND()
-else:
-    if disease:
-        input_size = 13
-        l_rate = 0.0007  
-        diseasename = "ID"
-    else:
-        input_size = 18
-        l_rate = 0.0007 
-        diseasename = "ASD"
-    model = DeepND_ST(featsize=input_size)
+trial = 10
+k = 5
     
 if mode:
     experiment = 1
@@ -68,3 +48,28 @@ else:
     state = np.random.get_state()
     with open(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'wb') as f:
         pickle.dump(state, f)
+        
+if model_select:
+    featsizeid = 13 
+    featsizeasd = 18
+    featsize = 28 
+    h1 = 4
+    h2 = 2
+    lrasd = 0.0007
+    lrid = 0.007
+    lrc = 0.0007
+    wd = 0.0001
+    diseasename = "Multi"
+    model = DeepND()
+    deepnd()
+else:
+    if disease:
+        input_size = 13
+        l_rate = 0.0007  
+        diseasename = "ID"
+    else:
+        input_size = 18
+        l_rate = 0.0007 
+        diseasename = "ASD"
+    model = DeepND_ST(featsize=input_size)
+    deepnd_st( root = root, path = path, mode = 0, trial=trial, k=k, diseasename = diseasename)
