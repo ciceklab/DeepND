@@ -8,6 +8,17 @@ Ankara, 2020
 import numpy as np
 import pandas as pd
 import csv
+def memoryUpdate(usage = 0, cached = 0):
+    # Memory Update!
+    current_usage = 0
+    current_cached = 0
+    for d in range(torch.cuda.device_count()):
+        current_usage += torch.cuda.max_memory_allocated(device='cuda:'+str(d))
+        current_cached += torch.cuda.max_memory_cached(device='cuda:'+str(d))
+    usage = max(usage,current_usage)
+    cached = max(cached, current_cached)
+    print("GPU Memory Usage:", usage / 10**9, "GB Used, ", cached / 10**9, "GB Cached")
+    return usage, cached
 
 def weight_reset(m):
     if isinstance(m, GCNConv) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm1d):
