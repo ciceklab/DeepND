@@ -24,77 +24,15 @@ geneDict = constructGeneDictionary(root + "/Data/Brainspan/hugogenes_entrez.txt"
 
 if disease:
     # ID Validation
-    pos_gold_standards = pd.read_csv(root + "/Data/ID_Pos_Gold_Standards.csv")
-    neg_gold_standards = pd.read_csv(root + "/Data/ID_Neg_Gold_Standards.csv")
+    g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, diseasename = "ID", geneNames_all)
 else:
     # ASD Validation
-    pos_gold_standards = pd.read_csv(root + "/Data/ASD_Pos_Gold_Standards.csv")
-    neg_gold_standards = pd.read_csv(root + "/Data/ASD_Neg_Gold_Standards.csv")
-
-pos_gold_std = pos_gold_standards.values
-neg_gold_std = neg_gold_standards.values
-
-pos_gold_std_genes = [str(item) for item in pos_gold_std[:,0]]
-pos_gold_std_evidence = [str(item) for item in pos_gold_std[:,2]]
-neg_gold_std_genes = [str(item) for item in neg_gold_std[:,0]]
-
-y = torch.zeros(len(geneNames_all), dtype = torch.long)
-
-pgold_tada_intersect, pgold_indices, pgold_delete_indices, g_bs_tada_intersect_indices = intersect_lists(pos_gold_std_genes , [str(item) for item in geneNames_all], geneDict)
-ngold_tada_intersect, ngold_indices, ngold_delete_indices, n_bs_tada_intersect_indices = intersect_lists(neg_gold_std_genes , [str(item) for item in geneNames_all], geneDict)
-y[g_bs_tada_intersect_indices] = 1
-y[n_bs_tada_intersect_indices] = 0
-gold_evidence = [pos_gold_std_evidence[item] for item in pgold_indices]
-
-print("\n", len(pgold_tada_intersect), " Many Positive Gold Standard Genes are Found!")
-print(len([pos_gold_std_genes[item] for item in pgold_delete_indices]), " Many Positive Gold Standard Genes Cannot be Found!")
-print("\n", len(ngold_tada_intersect), " Many Negative Gold Standard Genes are Found!")
-print(len([neg_gold_std_genes[item] for item in ngold_delete_indices]), " Many Negative Gold Standard Genes Cannot be Found!")
-pos_neg_intersect, pos_indices, not_found_indices , neg_indices = intersect_lists(pgold_tada_intersect , ngold_tada_intersect, geneDict)
-print("Positive and Negative Gold Standard Gene Intersection List:", pos_neg_intersect)
-print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
+    g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, diseasename = "ASD", geneNames_all)
 
 ###############################################################################################################################################
 """VALIDATION SETS"""
 ###############################################################################################################################################
-k = 5 # k for k-fold cross validation
-# If another validation set is used, gene counts must be updated. This part could be done automatically as well by checking gene evidences and standard values from files
-e1_gene_count = 0
-e2_gene_count = 0
-e3e4_gene_count = 0
-e1_gene_indices = []
-e2_gene_indices = []
-e3e4_gene_indices = []
-pos_gold_standards = []
-neg_gold_standards
-for index,i in enumerate(gold_evidence):
-    if i == "E1":
-        e1_gene_count += 1
-        e1_gene_indices.append(g_bs_tada_intersect_indices[index])
-        print("E1 Gene Found:", geneNames_all[g_bs_tada_intersect_indices[index]])
-    elif i == "E2":
-        e2_gene_count += 1
-        e2_gene_indices.append(g_bs_tada_intersect_indices[index])
-    else:
-        e3e4_gene_count += 1
-        e3e4_gene_indices.append(g_bs_tada_intersect_indices[index])
-e1_fold_size = math.ceil(e1_gene_count / k)
-e2_fold_size = math.ceil(e2_gene_count / k)
-e3e4_fold_size = math.ceil(e3e4_gene_count / k)
-neg_gene_count = len(n_bs_tada_intersect_indices)
-neg_fold_size = math.ceil(neg_gene_count / k)
-
-print("E1 Gene Count:", e1_gene_count)
-print("E2 Gene Count:", e2_gene_count)
-print("E3E4 Gene Count:", e3e4_gene_count)
-
-# Shuffle all genes
-np.random.set_state(state)
-e1_perm = np.random.permutation(e1_gene_count)
-e2_perm = np.random.permutation(e2_gene_count)
-e3e4_perm = np.random.permutation(e3e4_gene_count)
-neg_perm = np.random.permutation(neg_gene_count)
-
+e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = createValidationSets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = state)
 
 print("CUDA Device Count:",torch.cuda.device_count())
 ###############################################################################################################################################
@@ -166,14 +104,7 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
     fpr = dict()
     tpr = dict()
     
-    # Memory Update!
-    current_usage = 0
-    current_cached = 0
-    for d in range(torch.cuda.device_count()):
-        current_usage += torch.cuda.max_memory_allocated(device='cuda:'+str(d))
-        current_cached += torch.cuda.max_memory_cached(device='cuda:'+str(d))
-    usage = max(usage,current_usage)
-    cached = max(cached, current_cached)
+    usege, cached =  memoryUpdate(usage, cached)
     print("GPU Memory Usage:", usage / 10**9, "GB Used, ", cached / 10**9, "GB Cached")
     for k1 in range(k):
     
