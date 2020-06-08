@@ -41,16 +41,9 @@ print("CUDA Device Count:",torch.cuda.device_count())
 ###############################################################################################################################################
 row_genes = geneNames_all.values[:,0]
 if disease:
-    features = np.load(root + "/Data/ID_TADA_Features.npy")
+    data, features = loadFeatures(y, geneNames_all, root, diseasename = "ID")
 else:
-    features = np.load(root + "/Data/ASD_TADA_Features.npy")
-
-features = torch.from_numpy(features).float()
-features = (features - torch.mean(features,0)) / (torch.std(features,0))
-
-data = Data(x=features)
-data = data.to(devices[0])
-data.y = y.to(devices[0])
+    data, features = loadFeatures(y, geneNames_all, root, diseasename = "ASD")
 
 average_att = []
 stddev_att = []
@@ -62,10 +55,6 @@ average_att_gold_neg = []
 all_att = []
 pre_att = []
 
-features = []
-for i in range (len(devices)):
-    feature = data.x
-    features.append(feature)
 ###############################################################################################################################################    
 """MODEL CONSTRUCTION"""
 ###############################################################################################################################################
@@ -85,8 +74,7 @@ aucs = []
 aupr = []
 UsandPs = []
 predictions = torch.zeros((len(geneNames_all),1), dtype = torch.float)      
-usage = 0
-cached = 0
+usage, cached = memoryUpdate()
 
 f= open("/mnt/ilayda/gcn_exp_results/"+diseasename+"Exp"+str(experiment)+"test/runreport.txt","w+")
 f.write("This file contains only test results i.e. no training process.")
@@ -238,10 +226,10 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
             adjusted_mean_scores[data.auc_mask] = 0.0
             predictions[:,0] += adjusted_mean_scores
             # -------------------------------------------------------------
-            fpr["micro"], tpr["micro"], _ = roc_curve(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])
+            area_under_roc = roc_auc_score(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])
             precision, recall, thresholds = precision_recall_curve(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])
-            aucs.append(auc(fpr["micro"], tpr["micro"]))
-            print("AUC", auc(fpr["micro"], tpr["micro"]))
+            aucs.append(area_under_roc)
+            print("AUC", area_under_roc)
             
             average_precision = average_precision_score(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])   
             aupr.append(average_precision)
