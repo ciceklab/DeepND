@@ -38,7 +38,7 @@ def deepnd_st(root = "" , path= "", mode, trial, k, diseasename , devices, pfcgp
         g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, devices, diseasename = "ASD")
 
     # VALIDATION SETS
-    e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = createValidationSets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = state)
+    e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = createValidationSets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k = 5, state = state)
     
     # FEATURES
     row_genes = geneNames_all.values[:,0]

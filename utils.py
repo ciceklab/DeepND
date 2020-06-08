@@ -150,52 +150,10 @@ def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumas
         v1cnetworkweights[i] = v1cnetworkweights[i].to(devices[v1cgpumask[i]])
         shanetworks[i] = shanetworks[i].to(devices[shagpumask[i]])
         shanetworkweights[i] = shanetworkweights[i].to(devices[shagpumask[i]])
-                                 
+        
     return pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights
 
- def createValidationSets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = NULL):                                 
-    # k for k-fold cross validation
-    # If another validation set is used, gene counts must be updated. This part could be done automatically 
-    # as well by checking gene evidences and standard values from files
-    e1_gene_count = 0
-    e2_gene_count = 0
-    e3e4_gene_count = 0
-    e1_gene_indices = []
-    e2_gene_indices = []
-    e3e4_gene_indices = []
-    pos_gold_standards = []
-    neg_gold_standards
-    for index,i in enumerate(gold_evidence):
-        if i == "E1":
-            e1_gene_count += 1
-            e1_gene_indices.append(g_bs_tada_intersect_indices[index])
-            print("E1 Gene Found:", geneNames_all[g_bs_tada_intersect_indices[index]])
-        elif i == "E2":
-            e2_gene_count += 1
-            e2_gene_indices.append(g_bs_tada_intersect_indices[index])
-        else:
-            e3e4_gene_count += 1
-            e3e4_gene_indices.append(g_bs_tada_intersect_indices[index])
-    e1_fold_size = math.ceil(e1_gene_count / k)
-    e2_fold_size = math.ceil(e2_gene_count / k)
-    e3e4_fold_size = math.ceil(e3e4_gene_count / k)
-    neg_gene_count = len(n_bs_tada_intersect_indices)
-    neg_fold_size = math.ceil(neg_gene_count / k)
-    
-    print("E1 Gene Count:", e1_gene_count)
-    print("E2 Gene Count:", e2_gene_count)
-    print("E3E4 Gene Count:", e3e4_gene_count)
-    counts = [e1_gene_count, e2_gene_count, e3e4_gene_count, neg_gene_count]
-    # Shuffle all genes
-    if state:
-         np.random.set_state(state)
-    e1_perm = np.random.permutation(e1_gene_count)
-    e2_perm = np.random.permutation(e2_gene_count)
-    e3e4_perm = np.random.permutation(e3e4_gene_count)
-    neg_perm = np.random.permutation(neg_gene_count)
-    return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts
-
-def load_goldstandards(root,  geneNames_all, diseasename = "ASD":
+def load_goldstandards(root,  geneNames_all, diseasename = "ASD"):
     """GOLD STANDARDS"""
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
@@ -227,6 +185,48 @@ def load_goldstandards(root,  geneNames_all, diseasename = "ASD":
     print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
     return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence
 
+def create_validation_set(g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k, state):                                 
+    # k for k-fold cross validation
+    # If another validation set is used, gene counts must be updated. This part could be done automatically 
+    # as well by checking gene evidences and standard values from files
+    e1_gene_count = 0
+    e2_gene_count = 0
+    e3e4_gene_count = 0
+    e1_gene_indices = []
+    e2_gene_indices = []
+    e3e4_gene_indices = []
+    pos_gold_standards = []
+    neg_gold_standards = []
+    for index,i in enumerate(gold_evidence):
+        if i == "E1":
+            e1_gene_count += 1
+            e1_gene_indices.append(g_bs_tada_intersect_indices[index])
+            print("E1 Gene Found:", geneNames_all[g_bs_tada_intersect_indices[index]])
+        elif i == "E2":
+            e2_gene_count += 1
+            e2_gene_indices.append(g_bs_tada_intersect_indices[index])
+        else:
+            e3e4_gene_count += 1
+            e3e4_gene_indices.append(g_bs_tada_intersect_indices[index])
+    e1_fold_size = math.ceil(e1_gene_count / k)
+    e2_fold_size = math.ceil(e2_gene_count / k)
+    e3e4_fold_size = math.ceil(e3e4_gene_count / k)
+    neg_gene_count = len(n_bs_tada_intersect_indices)
+    neg_fold_size = math.ceil(neg_gene_count / k)
+    
+    print("E1 Gene Count:", e1_gene_count)
+    print("E2 Gene Count:", e2_gene_count)
+    print("E3E4 Gene Count:", e3e4_gene_count)
+    counts = [e1_gene_count, e2_gene_count, e3e4_gene_count, neg_gene_count]
+    # Shuffle all genes
+    if state:
+        np.random.set_state(state)
+    e1_perm = np.random.permutation(e1_gene_count)
+    e2_perm = np.random.permutation(e2_gene_count)
+    e3e4_perm = np.random.permutation(e3e4_gene_count)
+    neg_perm = np.random.permutation(neg_gene_count)
+    return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts
+
 def loadFeatures(y, geneNames_all, devices, diseasename = "ASD"):
     row_genes = geneNames_all.values[:,0]
     features = np.load(root + "/Data/" + diseasename + "_TADA_Features.npy")
@@ -240,9 +240,9 @@ def loadFeatures(y, geneNames_all, devices, diseasename = "ASD"):
     for i in range (len(devices)):
         feature = data.x
         features.append(feature).to(devices[i])
-     return data, features
+    return data, features
 
- def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root = "", diseasename="ASD", trial = 10, k = 5):
+def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root = "", diseasename="ASD", trial = 10, k = 5):
         predictions /= float(trial*k*(k-1))
         predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
         fpred = open( root + diseasename + "Exp" + str(experiment) + "test/predict.txt","w+")
