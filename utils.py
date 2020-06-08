@@ -213,6 +213,7 @@ def load_goldstandards(root, diseasename = 0, geneNames_all):
     print("Positive and Negative Gold Standard Gene Intersection List:", pos_neg_intersect)
     print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
     return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence
+
 def loadFeatures(y, geneNames_all, diseasename = "ASD"):
     row_genes = geneNames_all.values[:,0]
     features = np.load(root + "/Data/"+ diseasename +"_TADA_Features.npy")
@@ -227,3 +228,15 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
         feature = data.x
         features.append(feature).to(devices[i])
      return data, features
+
+ def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root, diseasename="ASD", trial = 10, k = 5):
+    predictions /= float(trial*k*(k-1))
+    predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
+    fpred = open( root +diseasename+"Exp"+str(experiment)+"test/predict.txt","w+")
+    fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
+    for index,row in enumerate(predictions):
+        if str(geneNames_all[index]) in geneDict:
+            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0   ) )
+        else:
+            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
+    fpred.close()
