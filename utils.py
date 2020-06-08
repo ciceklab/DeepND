@@ -241,9 +241,11 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
                 fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
         fpred.close()
                                  
-def writeExperimentSatats(f, aucs, aupr, diseasename,  root, diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13,
+def writeExperimentSatats( aucs, aupr, diseasename, f = NULL, root = NULL, diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13,
                           average_att, average_att_gold):
-    fpred = open( root +diseasename+"Exp"+str(experiment)+"test/predict.txt","a")
+    if (f == NULL) or f.closed:
+         f = open( root +diseasename+"Exp"+str(experiment)+"test/runreport.txt","w")
+    
     #Experiment Stats
     f.write("Disease : %s\n" % diseasename)
     f.write("Number of networks per region: %d\n" % network_count)
@@ -260,10 +262,9 @@ def writeExperimentSatats(f, aucs, aupr, diseasename,  root, diseasename="ASD", 
     print(" \u03C3 of AUPR of All Runs:", np.std(aupr) )
     f.write(" Median of AUPR of All Runs:%f\n" % np.median(aupr) )
     print("Meadian of AUCs of All Runs:", np.median(aupr) )
-    t = timedelta(seconds=(time.time()-init_time))
-    f.write("\nDone in %s hh:mm:ss.\n" % t )
+    f.write("\nDone in %s hh:mm:ss.\n" % timedelta( seconds = (time.time()-init_time) ) )
+                                 
     f.write("*"*80+"\n") 
-
     for i in range(len(aucs)):
         f.write("%s AUC:%f\n" % (diseasename, aucs[i]))    
     f.write("-"*20+"\n") 
@@ -271,5 +272,6 @@ def writeExperimentSatats(f, aucs, aupr, diseasename,  root, diseasename="ASD", 
         f.write("%s AUPR:%f\n" % (diseasename , aupr[i]))    
     f.write("-"*20+"\n") 
     f.close()
+                                 
     print("Generated results for ", diseasename, " Exp: ", experiment)
-    print("Done in ", t , "hh:mm:ss." )
+    print("Done in ", timedelta( seconds = (time.time()-init_time) ) , "hh:mm:ss." )
