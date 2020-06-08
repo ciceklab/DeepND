@@ -7,6 +7,7 @@ Ankara, 2020
 import models
 import utils
 import deepnd_st
+import torch
 
 import sys
 import pickle
@@ -31,8 +32,18 @@ for i in range(torch.cuda.device_count()):
     devices.append(torch.device('cuda:' + str(i)))
 print("CUDA Device Count:",torch.cuda.device_count())
     
+if model_select:
+    diseasename = "Multi"
+else:
+    if disease:
+        diseasename = "ID"
+    else:
+        diseasename = "ASD"
+
+access_rights = 0o755
+       
 if mode:
-    experiment = 1
+    experiment = 0
     if experiment < 10:
         experiment = "0" + str(experiment)
     print("Generating results for ", diseasename , " Exp :", experiment)

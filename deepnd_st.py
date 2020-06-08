@@ -19,7 +19,7 @@ from sklearn.metrics import roc_curve, auc, average_precision_score, roc_auc_sco
 import models
 import utils
 
-def deepnd_st(root = "" , path= "", mode, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask):
+def deepnd_st(root, path, mode, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask):
     
     geneNames_all = pd.read_csv(root + "/Data/Brainspan/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
@@ -38,7 +38,7 @@ def deepnd_st(root = "" , path= "", mode, trial, k, diseasename , devices, pfcgp
         g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, devices, diseasename = "ASD")
 
     # VALIDATION SETS
-    e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = createValidationSets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k = 5, state = state)
+    e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = create_validation_set( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k = 5, state = state)
     
     # FEATURES
     row_genes = geneNames_all.values[:,0]
