@@ -230,13 +230,46 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
      return data, features
 
  def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root, diseasename="ASD", trial = 10, k = 5):
-    predictions /= float(trial*k*(k-1))
-    predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
-    fpred = open( root +diseasename+"Exp"+str(experiment)+"test/predict.txt","w+")
-    fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
-    for index,row in enumerate(predictions):
-        if str(geneNames_all[index]) in geneDict:
-            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0   ) )
-        else:
-            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
-    fpred.close()
+        predictions /= float(trial*k*(k-1))
+        predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
+        fpred = open( root +diseasename+"Exp"+str(experiment)+"test/predict.txt","w+")
+        fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
+        for index,row in enumerate(predictions):
+            if str(geneNames_all[index]) in geneDict:
+                fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0   ) )
+            else:
+                fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
+        fpred.close()
+                                 
+def writeExperimentSatats(f, aucs, aupr, diseasename,  root, diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13,
+                          average_att, average_att_gold):
+    fpred = open( root +diseasename+"Exp"+str(experiment)+"test/predict.txt","a")
+    #Experiment Stats
+    f.write("Disease : %s\n" % diseasename)
+    f.write("Number of networks per region: %d\n" % network_count)
+    print("Number of networks per region:" , network_count)
+    f.write("\nMean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs) )
+    print(" Mean(\u03BC) AUC of All Runs:", np.mean(aucs) )
+    f.write(" \u03C3 of AUCs of All Runs:%f\n" % np.std(aucs) )
+    print("\u03C3 of AUCs of All Runs:", np.std(aucs) )
+    f.write(" Median of AUCs of All Runs:%f\n" % np.median(aucs) )
+    print(" Meadian of AUCs of All Runs:", np.median(aucs) )
+    f.write("\n Mean (\u03BC) APRC of All Runs:%f\n" % np.mean(aupr) )
+    print(" Mean(\u03BC) AUPR of All Runs:", np.mean(aupr) )
+    f.write(" \u03C3 of AUPR of All Runs:%f\n" % np.std(aupr) )
+    print(" \u03C3 of AUPR of All Runs:", np.std(aupr) )
+    f.write(" Median of AUPR of All Runs:%f\n" % np.median(aupr) )
+    print("Meadian of AUCs of All Runs:", np.median(aupr) )
+    t = timedelta(seconds=(time.time()-init_time))
+    f.write("\nDone in %s hh:mm:ss.\n" % t )
+    f.write("*"*80+"\n") 
+
+    for i in range(len(aucs)):
+        f.write("%s AUC:%f\n" % (diseasename, aucs[i]))    
+    f.write("-"*20+"\n") 
+    for i in range(len(aupr)):
+        f.write("%s AUPR:%f\n" % (diseasename , aupr[i]))    
+    f.write("-"*20+"\n") 
+    f.close()
+    print("Generated results for ", diseasename, " Exp: ", experiment)
+    print("Done in ", t , "hh:mm:ss." )
