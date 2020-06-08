@@ -130,7 +130,8 @@ def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices, n
     return pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights
 def create_validation_sets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = NULL):                                 
     # k for k-fold cross validation
-    # If another validation set is used, gene counts must be updated. This part could be done automatically as well by checking gene evidences and standard values from files
+    # If another validation set is used, gene counts must be updated. This part could be done automatically 
+    # as well by checking gene evidences and standard values from files
     e1_gene_count = 0
     e2_gene_count = 0
     e3e4_gene_count = 0
