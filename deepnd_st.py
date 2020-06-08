@@ -105,7 +105,6 @@ for j in range(trial): # 10 here means Run count. Run given times and calculate 
     tpr = dict()
     
     usege, cached =  memoryUpdate(usage, cached)
-    print("GPU Memory Usage:", usage / 10**9, "GB Used, ", cached / 10**9, "GB Cached")
     for k1 in range(k):
     
         e1mask = [e1_gene_indices[index] for index in e1_perm[k1 * e1_fold_size: min(e1_gene_count, (k1 + 1) * e1_fold_size) ] ]
