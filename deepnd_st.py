@@ -45,6 +45,11 @@ if disease:
 else:
     data, features = loadFeatures(y, geneNames_all, root, diseasename = "ASD")
 
+###############################################################################################################################################    
+"""MODEL CONSTRUCTION"""
+###############################################################################################################################################
+model = DeepND_ST(featsize=input_size, unit=input_size)
+
 average_att = []
 stddev_att = []
 average_att_gold = []
@@ -55,10 +60,6 @@ average_att_gold_neg = []
 all_att = []
 pre_att = []
 
-###############################################################################################################################################    
-"""MODEL CONSTRUCTION"""
-###############################################################################################################################################
-model = DeepND_ST(featsize=input_size, unit=input_size)
 for i in range(network_count * 4):
     average_att.append(0.0)
     average_att_gold.append(0.0)
