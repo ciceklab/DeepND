@@ -201,4 +201,4 @@ def load_goldstandards(root, diseasename = 0, geneNames_all):
     pos_neg_intersect, pos_indices, not_found_indices , neg_indices = intersect_lists(pgold_tada_intersect , ngold_tada_intersect, geneDict)
     print("Positive and Negative Gold Standard Gene Intersection List:", pos_neg_intersect)
     print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
-    return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices
+    return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence
