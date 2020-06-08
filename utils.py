@@ -105,7 +105,7 @@ def constructGeneDictionary(path):
             lineCount += 1         
     return genes
 
-def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices, network_count =13): 
+def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask, network_count =13): 
     periods = ["1-3", "2-4", "3-5", "4-6", "5-7", "6-8", "7-9", "8-10", "9-11", "10-12", "11-13", "12-14", "13-15"]
     pfc08Mask = [i for i in range(network_count)]
     mdcbc08Mask = [i for i in range(network_count)]
@@ -182,7 +182,7 @@ def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices, n
     neg_perm = np.random.permutation(neg_gene_count)
     return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts
 
-def load_goldstandards(root, diseasename = 0, geneNames_all):
+def load_goldstandards(root,  geneNames_all, diseasename = "ASD":
     """GOLD STANDARDS"""
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
@@ -229,7 +229,7 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
         features.append(feature).to(devices[i])
      return data, features
 
- def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root, diseasename="ASD", trial = 10, k = 5):
+ def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root = "../", diseasename="ASD", trial = 10, k = 5):
         predictions /= float(trial*k*(k-1))
         predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
         fpred = open( root +diseasename+"Exp"+str(experiment)+"test/predict.txt","w+")
@@ -241,7 +241,7 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
                 fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
         fpred.close()
                                  
-def writeExperimentSatats( aucs, aupr, root = NULL, diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
+def writeExperimentSatats( aucs, aupr, root = "../", diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
     f = open( root +diseasename+"Exp"+str(experiment)+"test/runreport.txt","w")
     if not mode : 
         f.write("This file contains only test results i.e. no training process.")

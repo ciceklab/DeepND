@@ -17,6 +17,13 @@ os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
 
 trial = 10
 k = 5
+mode = 1
+model_select = 0
+disease = 0
+
+devices = []
+for i in range(torch.cuda.device_count()):
+    devices.append(torch.device('cuda:' + str(i)))
     
 if mode:
     experiment = 1

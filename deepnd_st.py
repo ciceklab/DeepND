@@ -12,7 +12,7 @@ import pickle
 import models
 import utils
 
-def deepnd_st(root = NULL, path= NULL, mode = 0, trial=10, k=5, diseasename = "ASD"):
+def deepnd_st(root = ".." , path= "..", mode = 0, trial=10, k=5, diseasename = "ASD", devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask):
     
     geneNames_all = pd.read_csv(root + "/Data/Brainspan/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
@@ -26,10 +26,10 @@ def deepnd_st(root = NULL, path= NULL, mode = 0, trial=10, k=5, diseasename = "A
     
     if diseasename == "ID":
         # ID Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, diseasename = "ID", geneNames_all)
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, diseasename = "ID")
     else:
         # ASD Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, diseasename = "ASD", geneNames_all)
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, , geneNames_all, diseasename = "ASD")
     
     ###############################################################################################################################################
     """VALIDATION SETS"""
@@ -45,7 +45,7 @@ def deepnd_st(root = NULL, path= NULL, mode = 0, trial=10, k=5, diseasename = "A
         data, features = loadFeatures(y, geneNames_all, root, diseasename = "ID")
     else:
         data, features = loadFeatures(y, geneNames_all, root, diseasename = "ASD")
-    
+    pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask)
     ###############################################################################################################################################    
     """MODEL CONSTRUCTION"""
     ###############################################################################################################################################
