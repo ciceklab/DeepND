@@ -127,7 +127,7 @@ def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumas
     
     for period in pfc08Mask:
         pfcnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
-        pfcnetworkweights.append(torch.abs(torch.load((root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+        pfcnetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
     
     for period in mdcbc08Mask:
         mdcbcnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/MDCBC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
