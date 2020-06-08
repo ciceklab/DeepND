@@ -4,6 +4,11 @@ Training and testing processes for DeepND ST
 Bilkent University, Department of Computer Engineering
 Ankara, 2020
 """
+
+
+geneNames_all = pd.read_csv(root + "/Data/Brainspan/row-genes.txt", header = None)
+geneNames_all = geneNames_all[0].tolist()
+geneDict = constructGeneDictionary(root + "/Data/Brainspan/hugogenes_entrez.txt")
 ###############################################################################################################################################
 """GOLD STANDARDS"""
 ###############################################################################################################################################
