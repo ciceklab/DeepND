@@ -7,7 +7,11 @@ Ankara, 2020
 
 import numpy as np
 import pandas as pd
+from datetime import timedelta
+import torch
+from torch_geometric.data import Data
 import csv
+
 def memoryUpdate(usage = 0, cached = 0):
     # Memory Update!
     current_usage = 0
@@ -105,12 +109,21 @@ def constructGeneDictionary(path):
             lineCount += 1         
     return genes
 
-def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask, network_count =13): 
+def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask, network_count =13): 
     periods = ["1-3", "2-4", "3-5", "4-6", "5-7", "6-8", "7-9", "8-10", "9-11", "10-12", "11-13", "12-14", "13-15"]
     pfc08Mask = [i for i in range(network_count)]
     mdcbc08Mask = [i for i in range(network_count)]
     v1c08Mask = [i for i in range(network_count)]
     sha08Mask= [i for i in range(network_count)]
+    
+    pfcnetworks = []
+    pfcnetworkweights = []
+    mdcbcnetworks = []
+    mdcbcnetworkweights = []
+    v1cnetworks = []
+    v1cnetworkweights = []
+    shanetworks = []
+    shanetworkweights = []
     
     for period in pfc08Mask:
         pfcnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
@@ -187,8 +200,8 @@ def load_goldstandards(root,  geneNames_all, diseasename = "ASD":
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
     
-    pos_gold_standards = pd.read_csv(root + "/Data/"+ diseasename +"_Pos_Gold_Standards.csv")
-    neg_gold_standards = pd.read_csv(root + "/Data/"+ diseasename +"_Neg_Gold_Standards.csv")
+    pos_gold_standards = pd.read_csv(root + "/Data/" + diseasename + "_Pos_Gold_Standards.csv")
+    neg_gold_standards = pd.read_csv(root + "/Data/" + diseasename + "_Neg_Gold_Standards.csv")
     
     pos_gold_std = pos_gold_standards.values
     neg_gold_std = neg_gold_standards.values
@@ -214,9 +227,9 @@ def load_goldstandards(root,  geneNames_all, diseasename = "ASD":
     print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
     return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence
 
-def loadFeatures(y, geneNames_all, diseasename = "ASD"):
+def loadFeatures(y, geneNames_all, devices, diseasename = "ASD"):
     row_genes = geneNames_all.values[:,0]
-    features = np.load(root + "/Data/"+ diseasename +"_TADA_Features.npy")
+    features = np.load(root + "/Data/" + diseasename + "_TADA_Features.npy")
     features = torch.from_numpy(features).float()
     features = (features - torch.mean(features,0)) / (torch.std(features,0))
     
@@ -229,10 +242,10 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
         features.append(feature).to(devices[i])
      return data, features
 
- def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root = "../", diseasename="ASD", trial = 10, k = 5):
+ def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root = "", diseasename="ASD", trial = 10, k = 5):
         predictions /= float(trial*k*(k-1))
         predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
-        fpred = open( root +diseasename+"Exp"+str(experiment)+"test/predict.txt","w+")
+        fpred = open( root + diseasename + "Exp" + str(experiment) + "test/predict.txt","w+")
         fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
         for index,row in enumerate(predictions):
             if str(geneNames_all[index]) in geneDict:
@@ -241,8 +254,8 @@ def loadFeatures(y, geneNames_all, diseasename = "ASD"):
                 fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
         fpred.close()
                                  
-def writeExperimentSatats( aucs, aupr, root = "../", diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
-    f = open( root +diseasename+"Exp"+str(experiment)+"test/runreport.txt","w")
+def writeExperimentSatats( aucs, aupr, root = "", diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
+    f = open( root + diseasename + "Exp" + str(experiment) + "test/runreport.txt","w")
     if not mode : 
         f.write("This file contains only test results i.e. no training process.")
     #Experiment Stats

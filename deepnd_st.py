@@ -8,47 +8,49 @@ import numpy as np
 import pandas as pd
 import csv
 import pickle
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch_geometric.nn import GCNConv
+from torch_geometric.data import Data
+from torch.autograd import Variable
+from sklearn.metrics import roc_curve, auc, average_precision_score, roc_auc_score
 
 import models
 import utils
 
-def deepnd_st(root = ".." , path= "..", mode = 0, trial=10, k=5, diseasename = "ASD", devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask):
+def deepnd_st(root = "" , path= "", mode, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask):
     
     geneNames_all = pd.read_csv(root + "/Data/Brainspan/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
     geneDict = constructGeneDictionary(root + "/Data/Brainspan/hugogenes_entrez.txt")
     gene_names_list = [str(item) for item in geneNames_all]
-    ###############################################################################################################################################
-    """GOLD STANDARDS"""
-    ###############################################################################################################################################
-    #Following section loads gold standard genes
+    
+    #GOLD STANDARDS
+    # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
     
     if diseasename == "ID":
         # ID Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, diseasename = "ID")
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, devices, diseasename = "ID")
     else:
         # ASD Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, , geneNames_all, diseasename = "ASD")
-    
-    ###############################################################################################################################################
-    """VALIDATION SETS"""
-    ###############################################################################################################################################
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, devices, diseasename = "ASD")
+
+    # VALIDATION SETS
     e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = createValidationSets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = state)
     
-    print("CUDA Device Count:",torch.cuda.device_count())
-    ###############################################################################################################################################
-    """FEATURES"""
-    ###############################################################################################################################################
+    # FEATURES
     row_genes = geneNames_all.values[:,0]
     if diseasename == "ID":
         data, features = loadFeatures(y, geneNames_all, root, diseasename = "ID")
     else:
         data, features = loadFeatures(y, geneNames_all, root, diseasename = "ASD")
-    pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask)
-    ###############################################################################################################################################    
-    """MODEL CONSTRUCTION"""
-    ###############################################################################################################################################
+        
+    # NETWORKS
+    pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask) 
+    
+    # MODEL CONSTRUCTION
     model = DeepND_ST(featsize=input_size, unit=input_size)
     
     average_att = []
@@ -251,13 +253,11 @@ def deepnd_st(root = ".." , path= "..", mode = 0, trial=10, k=5, diseasename = "
     
         print("-"*80)
     ###############################################################################################################################################    
-    """Writing Final Result of the Session"""
-    ###############################################################################################################################################
+    # Writing Final Result of the Session
     writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root, diseasename= diseasename, trial = trial, k = k)
     riteExperimentSatats( aucs, aupr, root = root, diseasename=diseasename, trial = trial, k = k, init_time =init_time, network_count =network_count , mode = mode)
-    ###############################################################################################################################################
-    """HEATMAPS"""
-    ###############################################################################################################################################
+    
+    # HEATMAPS
     heatmap = torch.zeros(4, network_count,dtype=torch.float)
     heatmap2 = torch.zeros(4, network_count,dtype=torch.float)
     heatmap3 = torch.zeros(4, network_count,dtype=torch.float)
@@ -293,6 +293,7 @@ def deepnd_st(root = ".." , path= "..", mode = 0, trial=10, k=5, diseasename = "
         heatmap4[2,i - network_count * 2] = average_att_gold_e1e2[i]
         heatmap5[2,i - network_count * 2] = average_att_gold_neg[i]
         heatmap6[2,i-network_count*2,:] = all_att[i]
+        
     #heatmap[3,:] = average_att[19:26]
     for i in range(network_count * 3,network_count * 4):
         heatmap[3,i - network_count * 3] = average_att[i]

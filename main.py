@@ -6,8 +6,7 @@ Ankara, 2020
 """
 import models
 import utils
-import train
-import test
+import deepnd_st
 
 import sys
 import pickle
@@ -15,15 +14,22 @@ import pickle
 import os 
 os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
 
+root = ""
 trial = 10
 k = 5
 mode = 1
 model_select = 0
 disease = 0
 
+pfcgpumask = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+mdcbcgpumask = [1,1,1,1,1,2,2,2,3,3,3,3,3]
+v1cgpumask = [4,4,4,4,4,5,5,5,5,5,5,5,5]
+shagpumask = [5,5,6,6,6,6,6,6,6,6,6,6,6]
+
 devices = []
 for i in range(torch.cuda.device_count()):
     devices.append(torch.device('cuda:' + str(i)))
+print("CUDA Device Count:",torch.cuda.device_count())
     
 if mode:
     experiment = 1
@@ -68,7 +74,7 @@ if model_select:
     wd = 0.0001
     diseasename = "Multi"
     model = DeepND()
-    deepnd()
+    # deepnd()
 else:
     if disease:
         input_size = 13
@@ -79,4 +85,4 @@ else:
         l_rate = 0.0007 
         diseasename = "ASD"
     model = DeepND_ST(featsize=input_size)
-    deepnd_st( root = root, path = path, mode = 0, trial=trial, k=k, diseasename = diseasename)
+    deepnd_st( root, path , mode, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask)
