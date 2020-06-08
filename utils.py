@@ -170,3 +170,28 @@ def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices, n
     e3e4_perm = np.random.permutation(e3e4_gene_count)
     neg_perm = np.random.permutation(neg_gene_count)
     return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts
+
+def load_goldstandards(root, diseasename = 0, geneNames_all):
+    pos_gold_standards = pd.read_csv(root + "/Data/" + diseasename + "_Pos_Gold_Standards.csv")
+    neg_gold_standards = pd.read_csv((root + "/Data/" + diseasename + "_Neg_Gold_Standards.csv")
+    
+    pos_gold_std = pos_gold_standards.values
+    neg_gold_std = neg_gold_standards.values
+    
+    pos_gold_std_genes = [str(item) for item in pos_gold_std[:,0]]
+    pos_gold_std_evidence = [str(item) for item in pos_gold_std[:,2]]
+    neg_gold_std_genes = [str(item) for item in neg_gold_std[:,0]]
+    
+    y1 = torch.zeros(len(geneNames_all), dtype = torch.long)
+    
+    pgold_tada_intersect, pgold_indices, pgold_delete_indices, g_bs_tada_intersect_indices = intersect_lists(pos_gold_std_genes , [str(item) for item in geneNames_all], geneDict)
+    ngold_tada_intersect, ngold_indices, ngold_delete_indices, n_bs_tada_intersect_indices = intersect_lists(neg_gold_std_genes , [str(item) for item in geneNames_all], geneDict)
+    y1[g_bs_tada_intersect_indices] = 1
+    y1[n_bs_tada_intersect_indices] = 0
+    
+    gold_evidence_asd = [pos_gold_std_evidence_asd[item] for item in pgold_indices_asd]
+    
+    print("\n", len(pgold_tada_intersect_asd), " Many Positive ASD Gold Standard Genes are Found!")
+    print(len([pos_gold_std_genes_asd[item] for item in pgold_delete_indices_asd]), " Many Positive ASD Gold Standard Genes Cannot be Found!")
+    print("\n", len(ngold_tada_intersect_asd), " Many Negative ASD Gold Standard Genes are Found!")
+    print(len([neg_gold_std_genes_asd[item] for item in ngold_delete_indices_asd]), " Many Negative ASD Gold Standard Genes Cannot be Found!")
