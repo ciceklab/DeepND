@@ -16,6 +16,7 @@ import utils
 geneNames_all = pd.read_csv(root + "/Data/Brainspan/row-genes.txt", header = None)
 geneNames_all = geneNames_all[0].tolist()
 geneDict = constructGeneDictionary(root + "/Data/Brainspan/hugogenes_entrez.txt")
+gene_names_list = [str(item) for item in geneNames_all]
 ###############################################################################################################################################
 """GOLD STANDARDS"""
 ###############################################################################################################################################
@@ -46,8 +47,6 @@ else:
 
 features = torch.from_numpy(features).float()
 features = (features - torch.mean(features,0)) / (torch.std(features,0))
-
-gene_names_list = [str(item) for item in geneNames_all]
 
 data = Data(x=features)
 data = data.to(devices[0])
