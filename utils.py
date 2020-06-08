@@ -128,7 +128,8 @@ def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices, n
         shanetworkweights[i] = shanetworkweights[i].to(devices[shagpumask[i]])
                                  
     return pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights
-def create_validation_sets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = NULL):                                 
+
+ def createValidationSets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = NULL):                                 
     # k for k-fold cross validation
     # If another validation set is used, gene counts must be updated. This part could be done automatically 
     # as well by checking gene evidences and standard values from files
@@ -160,7 +161,7 @@ def create_validation_sets( g_bs_tada_intersect_indices, n_bs_tada_intersect_ind
     print("E1 Gene Count:", e1_gene_count)
     print("E2 Gene Count:", e2_gene_count)
     print("E3E4 Gene Count:", e3e4_gene_count)
-
+    counts = [e1_gene_count, e2_gene_count, e3e4_gene_count, neg_gene_count]
     # Shuffle all genes
     if state:
          np.random.set_state(state)
@@ -168,4 +169,4 @@ def create_validation_sets( g_bs_tada_intersect_indices, n_bs_tada_intersect_ind
     e2_perm = np.random.permutation(e2_gene_count)
     e3e4_perm = np.random.permutation(e3e4_gene_count)
     neg_perm = np.random.permutation(neg_gene_count)
-    return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm
+    return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts
