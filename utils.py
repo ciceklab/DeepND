@@ -128,4 +128,43 @@ def load_networks(root, pfc08Mask, mdcbc08Mask, v1c08Mask, sha08Mask, devices, n
         shanetworkweights[i] = shanetworkweights[i].to(devices[shagpumask[i]])
                                  
     return pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights
-                                 
+def create_validation_sets( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, k = 5, state = NULL):                                 
+    # k for k-fold cross validation
+    # If another validation set is used, gene counts must be updated. This part could be done automatically as well by checking gene evidences and standard values from files
+    e1_gene_count = 0
+    e2_gene_count = 0
+    e3e4_gene_count = 0
+    e1_gene_indices = []
+    e2_gene_indices = []
+    e3e4_gene_indices = []
+    pos_gold_standards = []
+    neg_gold_standards
+    for index,i in enumerate(gold_evidence):
+        if i == "E1":
+            e1_gene_count += 1
+            e1_gene_indices.append(g_bs_tada_intersect_indices[index])
+            print("E1 Gene Found:", geneNames_all[g_bs_tada_intersect_indices[index]])
+        elif i == "E2":
+            e2_gene_count += 1
+            e2_gene_indices.append(g_bs_tada_intersect_indices[index])
+        else:
+            e3e4_gene_count += 1
+            e3e4_gene_indices.append(g_bs_tada_intersect_indices[index])
+    e1_fold_size = math.ceil(e1_gene_count / k)
+    e2_fold_size = math.ceil(e2_gene_count / k)
+    e3e4_fold_size = math.ceil(e3e4_gene_count / k)
+    neg_gene_count = len(n_bs_tada_intersect_indices)
+    neg_fold_size = math.ceil(neg_gene_count / k)
+    
+    print("E1 Gene Count:", e1_gene_count)
+    print("E2 Gene Count:", e2_gene_count)
+    print("E3E4 Gene Count:", e3e4_gene_count)
+
+    # Shuffle all genes
+    if state:
+         np.random.set_state(state)
+    e1_perm = np.random.permutation(e1_gene_count)
+    e2_perm = np.random.permutation(e2_gene_count)
+    e3e4_perm = np.random.permutation(e3e4_gene_count)
+    neg_perm = np.random.permutation(neg_gene_count)
+    return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm
