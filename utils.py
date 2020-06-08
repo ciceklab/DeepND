@@ -213,3 +213,17 @@ def load_goldstandards(root, diseasename = 0, geneNames_all):
     print("Positive and Negative Gold Standard Gene Intersection List:", pos_neg_intersect)
     print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
     return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence
+def loadFeatures(y, geneNames_all, diseasename = "ASD"):
+    row_genes = geneNames_all.values[:,0]
+    features = np.load(root + "/Data/"+ diseasename +"_TADA_Features.npy")
+    features = torch.from_numpy(features).float()
+    features = (features - torch.mean(features,0)) / (torch.std(features,0))
+    
+    data = Data(x=features)
+    data = data.to(devices[0])
+    data.y = y.to(devices[0])
+
+    for i in range (len(devices)):
+        feature = data.x
+        features.append(feature).to(devices[i])
+     return data, features
