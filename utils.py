@@ -158,8 +158,8 @@ def load_goldstandards(root,  geneNames_all, diseasename = "ASD"):
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
     
-    pos_gold_standards = pd.read_csv(root + "/Data/" + diseasename + "_Pos_Gold_Standards.csv")
-    neg_gold_standards = pd.read_csv(root + "/Data/" + diseasename + "_Neg_Gold_Standards.csv")
+    pos_gold_standards = pd.read_csv(root + "Data/" + diseasename + "_Pos_Gold_Standards.csv")
+    neg_gold_standards = pd.read_csv(root + "Data/" + diseasename + "_Neg_Gold_Standards.csv")
     
     pos_gold_std = pos_gold_standards.values
     neg_gold_std = neg_gold_standards.values

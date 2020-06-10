@@ -17,13 +17,13 @@ from torch.autograd import Variable
 from sklearn.metrics import roc_curve, auc, average_precision_score, roc_auc_score
 
 import models
-import utils
+from utils import *
 
 def deepnd_st(root, path, mode, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask):
     
-    geneNames_all = pd.read_csv(root + "/Data/Brainspan/row-genes.txt", header = None)
+    geneNames_all = pd.read_csv(root + "Data/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
-    geneDict = constructGeneDictionary(root + "/Data/Brainspan/hugogenes_entrez.txt")
+    geneDict = constructGeneDictionary(root + "Data/hugogenes_entrez.txt")
     gene_names_list = [str(item) for item in geneNames_all]
     
     #GOLD STANDARDS
@@ -32,10 +32,10 @@ def deepnd_st(root, path, mode, trial, k, diseasename , devices, pfcgpumask, mdc
     
     if diseasename == "ID":
         # ID Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, devices, diseasename = "ID")
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, diseasename = "ID")
     else:
         # ASD Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, devices, diseasename = "ASD")
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, diseasename = "ASD")
 
     # VALIDATION SETS
     e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = create_validation_set( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k = 5, state = state)
@@ -51,7 +51,7 @@ def deepnd_st(root, path, mode, trial, k, diseasename , devices, pfcgpumask, mdc
     pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask) 
     
     # MODEL CONSTRUCTION
-    model = DeepND_ST(featsize=input_size, unit=input_size)
+    model = DeepND_ST(devices, featsize=input_size, unit=input_size)
     
     average_att = []
     stddev_att = []

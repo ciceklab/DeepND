@@ -4,14 +4,15 @@ Main Segment of  DeepND
 Bilkent University, Department of Computer Engineering
 Ankara, 2020
 """
-import models
-import utils
-import deepnd_st
+from models import *
+from utils import *
+from deepnd_st import *
 import torch
 
 import sys
 import pickle
-
+import numpy as np
+import pandas as pd
 import os 
 os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
 
@@ -77,8 +78,6 @@ if model_select:
     featsizeid = 13 
     featsizeasd = 17
     featsize = 29 
-    h1 = 4
-    h2 = 2
     lrasd = 0.0007
     lrid = 0.007
     lrc = 0.0007
@@ -95,5 +94,5 @@ else:
         input_size = 17
         l_rate = 0.0007 
         diseasename = "ASD"
-    model = DeepND_ST(featsize=input_size)
-    deepnd_st( root, path , mode, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask)
+    #model = DeepND_ST(featsize=input_size)
+    deepnd_st( root, path , mode, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask)

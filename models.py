@@ -12,15 +12,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
-
+from torch_geometric.data import Data
 
 class DeepND_ST(torch.nn.Module): # Single Task DeepND
-    def __init__(self, featsize=20, unit=15, genesize = 25825):
+    def __init__(self, devices,featsize=20, unit=15, genesize = 25825, network_count = 13, h1 = 4, h2 = 2):
         super(DeepND_ST, self).__init__()
         self.unit = unit
         self.gcn_k = 1
         self.genes = genesize
-        
         self.pfcnet = nn.ModuleList()
         self.mdcbcnet = nn.ModuleList()
         self.v1cnet = nn.ModuleList()
