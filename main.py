@@ -75,8 +75,8 @@ else:
         
 if model_select:
     featsizeid = 13 
-    featsizeasd = 18
-    featsize = 28 
+    featsizeasd = 17
+    featsize = 29 
     h1 = 4
     h2 = 2
     lrasd = 0.0007
@@ -92,7 +92,7 @@ else:
         l_rate = 0.0007  
         diseasename = "ID"
     else:
-        input_size = 18
+        input_size = 17
         l_rate = 0.0007 
         diseasename = "ASD"
     model = DeepND_ST(featsize=input_size)
