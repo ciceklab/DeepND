@@ -19,7 +19,7 @@ from sklearn.metrics import roc_curve, auc, average_precision_score, roc_auc_sco
 from models  import *
 from utils import *
 
-def deepnd_st(root, path, input_size, mode, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state):
+def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state,experiment):
     network_count = len(pfcgpumask)
     geneNames_all = pd.read_csv(root + "Data/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
@@ -32,10 +32,10 @@ def deepnd_st(root, path, input_size, mode, trial, k, diseasename , devices, pfc
     
     if diseasename == "ID":
         # ID Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ID")
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_evidence, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ID")
     else:
         # ASD Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ASD")
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_evidence, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ASD")
 
     # VALIDATION SETS
     e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = create_validation_set( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k = 5, state = state)
@@ -167,7 +167,7 @@ def deepnd_st(root, path, input_size, mode, trial, k, diseasename , devices, pfc
                 else:
                     model.apply(weight_reset)
                     optimizer = torch.optim.Adam(model.parameters(), lr=l_rate, weight_decay=0.0001)
-                    for epoch in range(max_epoch):
+                    for epoch in range(1000):
                         model = model.train()
                         optimizer.zero_grad()
                         out = model(features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)

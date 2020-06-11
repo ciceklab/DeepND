@@ -9,6 +9,9 @@ import numpy as np
 import pandas as pd
 from datetime import timedelta
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
 import csv
 import math
@@ -190,7 +193,7 @@ def load_goldstandards(root,  geneNames_all, geneDict, diseasename = "ASD"):
     pos_neg_intersect, pos_indices, not_found_indices , neg_indices = intersect_lists(pgold_tada_intersect , ngold_tada_intersect, geneDict)
     print("Positive and Negative Gold Standard Gene Intersection List:", pos_neg_intersect)
     print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
-    return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, gold_evidence
+    return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_evidence, gold_evidence
 
 def create_validation_set(g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k, state):                                 
     # k for k-fold cross validation

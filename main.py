@@ -19,7 +19,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
 root = ""
 trial = 10
 k = 5
-mode = 1
+mode = 0
 model_select = 0
 disease = 0
 
@@ -53,9 +53,9 @@ if mode:
     try:
         os.mkdir(path, access_rights)
     except OSError:
-        print ("Creation of the test directory failed")
+        print ("Creation of the test directory failed. Possibly, the directory already exists.")
     else:
-        print ("Successfully created the test directory")
+        print ("Successfully created the test directory.")
     # Load random states for reproducing test results
     torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
     state = np.random.get_state()
@@ -63,13 +63,17 @@ if mode:
         state = pickle.load(f)
     np.random.set_state(state)
 else:
+    experiment = 0
+    if experiment < 10:
+        experiment = "0" + str(experiment)
+    print("Training ", diseasename , " for Exp :", experiment)
     path = root + diseasename + "Exp" + str(experiment)
     try:
         os.mkdir(path, access_rights)
     except OSError:
-        print ("Creation of the directory for the results failed")
+        print ("Creation of the directory for the results failed. Possibly, the directory already exists.")
     else:
-        print ("Successfully created the directory for the results")
+        print ("Successfully created the directory for the results.")
     torch.save(torch.get_rng_state(),root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state")
     state = np.random.get_state()
     with open(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'wb') as f:
@@ -96,4 +100,4 @@ else:
         l_rate = 0.0007 
         diseasename = "ASD"
     #model = DeepND_ST(featsize=input_size)
-    deepnd_st( root, path, input_size, mode, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state)
+    deepnd_st( root, path, input_size, mode,  l_rate, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment)
