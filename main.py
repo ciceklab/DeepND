@@ -23,10 +23,10 @@ mode = 1
 model_select = 0
 disease = 0
 
-pfcgpumask = [0,0,0,0,0,0,0,0,0,0,0,0,0]
-mdcbcgpumask = [1,1,1,1,1,2,2,2,3,3,3,3,3]
-v1cgpumask = [4,4,4,4,4,5,5,5,5,5,5,5,5]
-shagpumask = [5,5,6,6,6,6,6,6,6,6,6,6,6]
+pfcgpumask = [0] #,0,0,0,0,0,0,0,0,0,0,0,0]
+mdcbcgpumask = [0]#,1,1,1,1,2,2,2,3,3,3,3,3]
+v1cgpumask = [0]#4,4,4,4,5,5,5,5,5,5,5,5]
+shagpumask = [0]#5,6,6,6,6,6,6,6,6,6,6,6]
 
 devices = []
 for i in range(torch.cuda.device_count()):
