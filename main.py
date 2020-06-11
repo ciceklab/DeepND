@@ -31,6 +31,7 @@ shagpumask = [5,5,6,6,6,6,6,6,6,6,6,6,6]
 devices = []
 for i in range(torch.cuda.device_count()):
     devices.append(torch.device('cuda:' + str(i)))
+    
 print("CUDA Device Count:",torch.cuda.device_count())
     
 if model_select:
@@ -95,4 +96,4 @@ else:
         l_rate = 0.0007 
         diseasename = "ASD"
     #model = DeepND_ST(featsize=input_size)
-    deepnd_st( root, path , mode, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask)
+    deepnd_st( root, path, input_size, mode, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state)

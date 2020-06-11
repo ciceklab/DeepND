@@ -11,6 +11,7 @@ from datetime import timedelta
 import torch
 from torch_geometric.data import Data
 import csv
+import math
 
 def memoryUpdate(usage = 0, cached = 0):
     # Memory Update!
@@ -109,12 +110,18 @@ def constructGeneDictionary(path):
             lineCount += 1         
     return genes
 
-def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumask, network_count =13): 
+def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, mask = None , network_count =13): 
     periods = ["1-3", "2-4", "3-5", "4-6", "5-7", "6-8", "7-9", "8-10", "9-11", "10-12", "11-13", "12-14", "13-15"]
-    pfc08Mask = [i for i in range(network_count)]
-    mdcbc08Mask = [i for i in range(network_count)]
-    v1c08Mask = [i for i in range(network_count)]
-    sha08Mask= [i for i in range(network_count)]
+    if mask:
+        pfc08Mask = mask
+        mdcbc08Mask = mask
+        v1c08Mask = mask
+        sha08Mask= mask
+    else:
+        pfc08Mask = [i for i in range(network_count)]
+        mdcbc08Mask = [i for i in range(network_count)]
+        v1c08Mask = [i for i in range(network_count)]
+        sha08Mask= [i for i in range(network_count)]
     
     pfcnetworks = []
     pfcnetworkweights = []
@@ -126,22 +133,22 @@ def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumas
     shanetworkweights = []
     
     for period in pfc08Mask:
-        pfcnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
-        pfcnetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/PFC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+        pfcnetworks.append(torch.load(root + "Data/EdgeTensors/PFC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
+        pfcnetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/PFC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
     
     for period in mdcbc08Mask:
-        mdcbcnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/MDCBC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
-        mdcbcnetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/MDCBC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+        mdcbcnetworks.append(torch.load(root + "Data/EdgeTensors/MDCBC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
+        mdcbcnetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/MDCBC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
       
     for period in v1c08Mask:
-        v1cnetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/V1C" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
-        v1cnetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/V1C" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+        v1cnetworks.append(torch.load(root + "Data/EdgeTensors/V1C" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
+        v1cnetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/V1C" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
     
     for period in sha08Mask:
-        shanetworks.append(torch.load(root + "/Data/EdgeTensors/PointEight/SHA" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
-        shanetworkweights.append(torch.abs(torch.load(root + "/Data/EdgeTensors/PointEight/SHA" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
+        shanetworks.append(torch.load(root + "Data/EdgeTensors/SHA" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
+        shanetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/SHA" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
     
-    for i in range(network_count):
+    for i in range(len(pfc08Mask)):
         pfcnetworks[i] = pfcnetworks[i].to(devices[pfcgpumask[i]])
         pfcnetworkweights[i] = pfcnetworkweights[i].to(devices[pfcgpumask[i]])
         mdcbcnetworks[i] = mdcbcnetworks[i].to(devices[mdcbcgpumask[i]])
@@ -153,7 +160,7 @@ def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumak, v1cgpumas
         
     return pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights
 
-def load_goldstandards(root,  geneNames_all, diseasename = "ASD"):
+def load_goldstandards(root,  geneNames_all, geneDict, diseasename = "ASD"):
     """GOLD STANDARDS"""
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
@@ -201,7 +208,6 @@ def create_validation_set(g_bs_tada_intersect_indices, n_bs_tada_intersect_indic
         if i == "E1":
             e1_gene_count += 1
             e1_gene_indices.append(g_bs_tada_intersect_indices[index])
-            print("E1 Gene Found:", geneNames_all[g_bs_tada_intersect_indices[index]])
         elif i == "E2":
             e2_gene_count += 1
             e2_gene_indices.append(g_bs_tada_intersect_indices[index])
@@ -227,19 +233,18 @@ def create_validation_set(g_bs_tada_intersect_indices, n_bs_tada_intersect_indic
     neg_perm = np.random.permutation(neg_gene_count)
     return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts
 
-def loadFeatures(y, geneNames_all, devices, diseasename = "ASD"):
-    row_genes = geneNames_all.values[:,0]
-    features = np.load(root + "/Data/" + diseasename + "_TADA_Features.npy")
+def loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD"):
+    features = np.load(root + "Data/" + diseasename + "_TADA_Features.npy")
     features = torch.from_numpy(features).float()
     features = (features - torch.mean(features,0)) / (torch.std(features,0))
     
     data = Data(x=features)
     data = data.to(devices[0])
     data.y = y.to(devices[0])
-
+    features = []
     for i in range (len(devices)):
         feature = data.x
-        features.append(feature).to(devices[i])
+        features.append(feature.to(devices[i]))
     return data, features
 
 def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root = "", diseasename="ASD", trial = 10, k = 5):
