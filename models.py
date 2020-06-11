@@ -15,10 +15,10 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
 
 class DeepND_ST(torch.nn.Module): # Single Task DeepND
-    def __init__(self, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize=20, unit=15, genesize = 25825, h1 = 4, h2 = 2):
+    def __init__(self, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize=20, unit=15, genesize = 25825):
         super(DeepND_ST, self).__init__()
         self.unit = unit
-        self.gcn_k = 1
+        self.h1 = 4
         self.genes = genesize
         self.pfcnet = nn.ModuleList()
         self.mdcbcnet = nn.ModuleList()
@@ -28,150 +28,88 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         for i in range(network_count):
             # PFC
             layers = nn.ModuleList()
-            for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[pfcgpumask[i]]))
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[pfcgpumask[i]]))
-                if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[pfcgpumask[i]]))
-                else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[pfcgpumask[i]]))
-            if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[pfcgpumask[i]]))
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[pfcgpumask[i]]))                
+            layers.append(GCNConv(self.unit, self.h1, improved= True, cached=True).to(devices[pfcgpumask[i]]))
+            layers.append(nn.BatchNorm1d(self.h1,track_running_stats=False).to(devices[pfcgpumask[i]]))
+            layers.append(GCNConv(self.h1, 2, improved= True, cached=True).to(devices[pfcgpumask[i]]))           
             self.pfcnet.append(layers)
             
         for i in range(network_count):
             # MDCBC
             layers = nn.ModuleList()
-            for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[mdcbcgpumask[i]]))
-                if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
-                else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
-            if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[mdcbcgpumask[i]]))
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[mdcbcgpumask[i]]))
+            layers.append(GCNConv(self.unit, self.h1, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
+            layers.append(nn.BatchNorm1d(self.h1,track_running_stats=False).to(devices[mdcbcgpumask[i]]))
+            layers.append(GCNConv(self.h1, 2, improved= True, cached=True).to(devices[mdcbcgpumask[i]]))
             self.mdcbcnet.append(layers)
             
         for i in range(network_count):
             # V1C
-            layers = nn.ModuleList()
-            for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[v1cgpumask[i]]))
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[v1cgpumask[i]]))
-                if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[v1cgpumask[i]]))
-                else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[v1cgpumask[i]]))
-            if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[v1cgpumask[i]]))
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[v1cgpumask[i]]))
+            layers = nn.ModuleList()            
+            layers.append(GCNConv(self.unit, self.h1, improved= True, cached=True).to(devices[v1cgpumask[i]]))
+            layers.append(nn.BatchNorm1d(self.h1,track_running_stats=False).to(devices[v1cgpumask[i]]))
+            layers.append(GCNConv(self.h1, 2, improved= True, cached=True).to(devices[v1cgpumask[i]]))
             self.v1cnet.append(layers)
             
         for i in range(network_count):
             # SHA
             layers = nn.ModuleList()
-            for j in range(self.gcn_k):
-                layers.append(GCNConv(self.unit, h1, improved= True, cached=True).to(devices[shagpumask[i]]))
-                layers.append(nn.BatchNorm1d(h1,track_running_stats=False).to(devices[shagpumask[i]]))
-                if self.gcn_k > 1:
-                    layers.append(GCNConv(h1, h2, improved= True, cached=True).to(devices[shagpumask[i]]))
-                else:
-                    layers.append(GCNConv(h1, 2, improved= True, cached=True).to(devices[shagpumask[i]]))
-            if self.gcn_k > 1:
-                layers.append(nn.Linear(self.gcn_k * h2, int(self.gcn_k * h2 / 2)).to(devices[shagpumask[i]]))
-                layers.append(nn.Linear(int(self.gcn_k * h2 / 2), 2).to(devices[shagpumask[i]]))
+            layers.append(GCNConv(self.unit, self.h1, improved= True, cached=True).to(devices[shagpumask[i]]))
+            layers.append(nn.BatchNorm1d(self.h1,track_running_stats=False).to(devices[shagpumask[i]]))
+            layers.append(GCNConv(self.h1, 2, improved= True, cached=True).to(devices[shagpumask[i]]))
             self.shanet.append(layers)    
         
         self.gating = nn.Linear(featsize, network_count * 4).to(devices[0])
         self.gating_weights = self.gating.weight
         
-    def forward(self,flatten, features,pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights):
+    def forward(self,flatten, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask):
         
         # Networks
         pfcconcatlist = []
         mdcbcconcatlist = []
         v1cconcatlist = []
         shaconcatlist = []
+        network_count = len(pfcnetworks)
         for i in range(network_count):
-            pfcconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[pfcgpumask[i]]))
-            mdcbcconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[mdcbcgpumask[i]]))
-            v1cconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[v1cgpumask[i]]))
-            shaconcatlist.append(torch.zeros((self.genes, self.gcn_k * h2), dtype = torch.float, requires_grad = True).to(devices[shagpumask[i]]))
+            pfcconcatlist.append(torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[pfcgpumask[i]]))
+            mdcbcconcatlist.append(torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[mdcbcgpumask[i]]))
+            v1cconcatlist.append(torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[v1cgpumask[i]]))
+            shaconcatlist.append(torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[shagpumask[i]]))
         expert_results = []
         
         for i in range(network_count):
-            for j in range(self.gcn_k):
-                x = self.pfcnet[i][j * 3](flatten[pfcgpumask[i]], pfcnetworks[i])
-                x = F.relu(x)
-                x = self.pfcnet[i][j * 3 + 1](x)
-                x = F.dropout(x, training=self.training)
-                x = self.pfcnet[i][j * 3 + 2](x, pfcnetworks[i])
-                if self.gcn_k > 1:
-                    pfcconcatlist[i][:,j * h2:j * h2 + h2] = x
-                else:
-                    expert_results.append(x)
-            if self.gcn_k > 1:
-                pfcconcatlist[i] = self.pfcnet[i][self.gcn_k * 3](pfcconcatlist[i])
-                pfcconcatlist[i] = F.relu(pfcconcatlist[i])
-                pfcconcatlist[i] = self.asdpfcnet[i][self.gcn_k * 3 + 1](pfcconcatlist[i])
-                expert_results.append(pfcconcatlist[i])
             
-            for j in range(self.gcn_k):
-                x = self.mdcbcnet[i][j * 3](flatten[mdcbcgpumask[i]], mdcbcnetworks[i])
-                x = F.relu(x)
-                x = self.mdcbcnet[i][j * 3+ 1](x)
-                x = F.dropout(x, training=self.training)
-                x = self.mdcbcnet[i][j * 3 + 2](x, mdcbcnetworks[i])
-                if self.gcn_k > 1:
-                    mdcbcconcatlist[i][:,j * h2: j * h2 + h2] = x
-                else:
-                    expert_results.append(x)
-            if self.gcn_k > 1:
-                mdcbcconcatlist[i] = self.mdcbcnet[i][self.gcn_k * 3](mdcbcconcatlist[i])
-                mdcbcconcatlist[i] = F.relu(asdmdcbcconcatlist[i])
-                mdcbcconcatlist[i] = self.asdmdcbcnet[i][self.gcn_k * 3 + 1](mdcbcconcatlist[i])
-                expert_results.append(mdcbcconcatlist[i])
-            
-            for j in range(self.gcn_k):
-                x = self.v1cnet[i][j * 3](flatten[v1cgpumask[i]], v1cnetworks[i])
-                x = F.relu(x)
-                x = self.v1cnet[i][j * 3 + 1](x)
-                x = F.dropout(x, training=self.training)
-                x = self.v1cnet[i][j * 3 + 2](x, v1cnetworks[i])
-                if self.gcn_k > 1:
-                    v1cconcatlist[i][:,j * h2: j * h2 + h2] = x
-                else:
-                    expert_results.append(x)
-            if self.gcn_k > 1:
-                v1cconcatlist[i] = self.v1cnet[i][self.gcn_k * 3](v1cconcatlist[i])
-                v1cconcatlist[i] = F.relu(v1cconcatlist[i])
-                v1cconcatlist[i] = self.v1cnet[i][self.gcn_k * 3 + 1](v1cconcatlist[i])
-                expert_results.append(v1cconcatlist[i])
-            
-            for j in range(self.gcn_k):
-                x = self.shanet[i][j * 3](flatten[shagpumask[i]], shanetworks[i])
-                x = F.relu(x)
-                x = self.shanet[i][j * 3 + 1](x)
-                x = F.dropout(x, training=self.training)
-                x = self.shanet[i][j * 3 + 2](x, shanetworks[i])
-                if self.gcn_k > 1:
-                    shaconcatlist[i][:,j * h2: j * h2 + h2] = x
-                else:
-                    expert_results.append(x)
-            if self.gcn_k > 1:
-                shaconcatlist[i] = self.shanet[i][self.gcn_k * 3](shaconcatlist[i])
-                shaconcatlist[i] = F.relu(shaconcatlist[i])
-                shaconcatlist[i] = self.shanet[i][self.gcn_k * 3 + 1](shaconcatlist[i])
-                expert_results.append(shaconcatlist[i])      
-                
+            x = self.pfcnet[i][0 * 3](flatten[pfcgpumask[i]], pfcnetworks[i])
+            x = F.relu(x)
+            x = self.pfcnet[i][0 * 3 + 1](x)
+            x = F.dropout(x, training=self.training)
+            x = self.pfcnet[i][0 * 3 + 2](x, pfcnetworks[i])
+            expert_results.append(x)
+
+            x = self.mdcbcnet[i][0 * 3](flatten[mdcbcgpumask[i]], mdcbcnetworks[i])
+            x = F.relu(x)
+            x = self.mdcbcnet[i][0 * 3+ 1](x)
+            x = F.dropout(x, training=self.training)
+            x = self.mdcbcnet[i][0 * 3 + 2](x, mdcbcnetworks[i])
+            expert_results.append(x)
+
+            x = self.v1cnet[i][0 * 3](flatten[v1cgpumask[i]], v1cnetworks[i])
+            x = F.relu(x)
+            x = self.v1cnet[i][0 * 3 + 1](x)
+            x = F.dropout(x, training=self.training)
+            x = self.v1cnet[i][0 * 3 + 2](x, v1cnetworks[i])
+            expert_results.append(x)
+
+            x = self.shanet[i][0 * 3](flatten[shagpumask[i]], shanetworks[i])
+            x = F.relu(x)
+            x = self.shanet[i][0 * 3 + 1](x)
+            x = F.dropout(x, training=self.training)
+            x = self.shanet[i][0 * 3 + 2](x, shanetworks[i])
+            expert_results.append(x)
+
         for i in range(len(expert_results)):
             expert_results[i] = F.log_softmax(expert_results[i], dim = 1)
             expert_results[i] = expert_results[i].to(devices[0]) 
 
-        weights = self.gating(features)
+        weights = self.gating(features[0])
         weights = F.softmax(weights, dim = 1)
         
         self.experts = weights

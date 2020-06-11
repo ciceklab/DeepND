@@ -14,7 +14,8 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
 from torch.autograd import Variable
-from sklearn.metrics import roc_curve, auc, average_precision_score, roc_auc_score
+from sklearn.metrics import average_precision_score, roc_auc_score
+from scipy.stats import mannwhitneyu
 
 from models  import *
 from utils import *
@@ -78,7 +79,10 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
     UsandPs = []
     predictions = torch.zeros((len(geneNames_all),1), dtype = torch.float)      
     usage, cached = memoryUpdate()
-    
+    # Early Stop Configuration
+    early_stop_enabled = True
+    old_loss = 100
+    early_stop_window = 7
     epoch_count = []       
     for j in range(trial): # 10 here means Run count. Run given times and calculate average AUC found from each run.
         print("Trial:", j+1)
@@ -137,7 +141,7 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                 print("AUC Mask Length:", len(data.auc_mask))
                 
                 #Uncomment line below if you want to use sample weights
-                sample_weights = torch.ones((len(train_mask)), dtype = torch.float).to(devices[1])
+                sample_weights = torch.ones((len(train_mask)), dtype = torch.float).to(devices[0])
                 
                 # Uncomment the loop below if you want to use sample weights
                 for index, value in enumerate(train_mask):
@@ -156,13 +160,13 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                     model.load_state_dict(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_ST_"+diseasename+"_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
                     model = model.eval()
                     with torch.no_grad():
-                        out = model(features, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                        out = model(features, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                         _, pred = out.max(dim=1)
                         correct = pred[data.auc_mask].eq(data.y[data.auc_mask]).sum().item()
                         correctTrain = pred[data.train_mask].eq(data.y[data.train_mask]).sum().item()
                         acc = correct / len(data.auc_mask)
                         accTrain = correctTrain / len(data.train_mask)
-                        valLoss = (F.nll_loss(out[data.auc_mask], data.y[data.auc_mask])).to(devices[1])
+                        valLoss = (F.nll_loss(out[data.auc_mask], data.y[data.auc_mask])).to(devices[0])
                         vloss.append(valLoss.cpu().item())
                 else:
                     model.apply(weight_reset)
@@ -170,8 +174,8 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                     for epoch in range(1000):
                         model = model.train()
                         optimizer.zero_grad()
-                        out = model(features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
-                        loss = (F.nll_loss(out[data.train_mask], data.y[data.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[1]))).to(devices[1]) # You can adjust class weights using values in FloatTensor
+                        out = model(features, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
+                        loss = (F.nll_loss(out[data.train_mask], data.y[data.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]))).to(devices[0]) # You can adjust class weights using values in FloatTensor
     
                         #Uncomment section below and comment out 3 lines above to enable sample weights.
                         loss = loss * sample_weights
@@ -181,14 +185,14 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
         
                         model = model.eval()
                         with torch.no_grad():
-                            out = model(features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                            out = model(features, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                             _, pred = out.max(dim=1)
                             correct = pred[data.auc_mask].eq(data.y[data.auc_mask]).sum().item()
                             correctTrain = pred[data.train_mask].eq(data.y[data.train_mask]).sum().item()
                             acc = correct / len(data.auc_mask)
                             accTrain = correctTrain / len(data.train_mask)
-                            valLoss = (F.nll_loss(out[data.auc_mask], data.y[data.auc_mask])).to(devices[1])
-                            asdvloss.append(valLoss.cpu().item())
+                            valLoss = (F.nll_loss(out[data.auc_mask], data.y[data.auc_mask])).to(devices[0])
+                            vloss.append(valLoss.cpu().item())
                 
                         if epoch != 0 and epoch % 25 == 0:
                             print('Validation Accuracy: {:.4f}, Validation Loss: {:.4f} Train Accuracy: {:.4f} Train Loss: {:.4f}'.format(acc,valLoss, accTrain, loss.mean().item()))
@@ -212,7 +216,6 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                 predictions[:,0] += adjusted_mean_scores
                 # -------------------------------------------------------------
                 area_under_roc = roc_auc_score(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])
-                precision, recall, thresholds = precision_recall_curve(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])
                 aucs.append(area_under_roc)
                 print("AUC", area_under_roc)
                 

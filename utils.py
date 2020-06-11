@@ -186,9 +186,9 @@ def load_goldstandards(root,  geneNames_all, geneDict, diseasename = "ASD"):
     y[n_bs_tada_intersect_indices] = 0
     gold_evidence = [pos_gold_std_evidence[item] for item in pgold_indices]
     
-    print("\n", len(pgold_tada_intersect), " Many Positive Gold Standard Genes are Found!")
+    print(len(pgold_tada_intersect), " Many Positive Gold Standard Genes are Found!")
     print(len([pos_gold_std_genes[item] for item in pgold_delete_indices]), " Many Positive Gold Standard Genes Cannot be Found!")
-    print("\n", len(ngold_tada_intersect), " Many Negative Gold Standard Genes are Found!")
+    print(len(ngold_tada_intersect), " Many Negative Gold Standard Genes are Found!")
     print(len([neg_gold_std_genes[item] for item in ngold_delete_indices]), " Many Negative Gold Standard Genes Cannot be Found!")
     pos_neg_intersect, pos_indices, not_found_indices , neg_indices = intersect_lists(pgold_tada_intersect , ngold_tada_intersect, geneDict)
     print("Positive and Negative Gold Standard Gene Intersection List:", pos_neg_intersect)
