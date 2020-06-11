@@ -73,7 +73,7 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
             mdcbcconcatlist.append(torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[mdcbcgpumask[i]]))
             v1cconcatlist.append(torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[v1cgpumask[i]]))
             shaconcatlist.append(torch.zeros((self.genes, 2), dtype = torch.float, requires_grad = True).to(devices[shagpumask[i]]))
-        expert_results = []
+        self.expert_results = []
         
         for i in range(network_count):
             
@@ -82,45 +82,45 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
             x = self.pfcnet[i][0 * 3 + 1](x)
             x = F.dropout(x, training=self.training)
             x = self.pfcnet[i][0 * 3 + 2](x, pfcnetworks[i])
-            expert_results.append(x)
+            self.expert_results.append(x)
 
             x = self.mdcbcnet[i][0 * 3](flatten[mdcbcgpumask[i]], mdcbcnetworks[i])
             x = F.relu(x)
             x = self.mdcbcnet[i][0 * 3+ 1](x)
             x = F.dropout(x, training=self.training)
             x = self.mdcbcnet[i][0 * 3 + 2](x, mdcbcnetworks[i])
-            expert_results.append(x)
+            self.expert_results.append(x)
 
             x = self.v1cnet[i][0 * 3](flatten[v1cgpumask[i]], v1cnetworks[i])
             x = F.relu(x)
             x = self.v1cnet[i][0 * 3 + 1](x)
             x = F.dropout(x, training=self.training)
             x = self.v1cnet[i][0 * 3 + 2](x, v1cnetworks[i])
-            expert_results.append(x)
+            self.expert_results.append(x)
 
             x = self.shanet[i][0 * 3](flatten[shagpumask[i]], shanetworks[i])
             x = F.relu(x)
             x = self.shanet[i][0 * 3 + 1](x)
             x = F.dropout(x, training=self.training)
             x = self.shanet[i][0 * 3 + 2](x, shanetworks[i])
-            expert_results.append(x)
+            self.expert_results.append(x)
 
-        for i in range(len(expert_results)):
-            expert_results[i] = F.log_softmax(expert_results[i], dim = 1)
-            expert_results[i] = expert_results[i].to(devices[0]) 
+        for i in range(len(self.expert_results)):
+            self.expert_results[i] = F.log_softmax(self.expert_results[i], dim = 1)
+            self.expert_results[i] = self.expert_results[i].to(devices[0]) 
 
         weights = self.gating(features[0])
         weights = F.softmax(weights, dim = 1)
         
         self.experts = weights
-        extended = torch.zeros((self.genes, len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
-        for i in range(len(expert_results)):
-            extended[:, i] = expert_results[i][:,1] 
+        extended = torch.zeros((self.genes, len(self.expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
+        for i in range(len(self.expert_results)):
+            extended[:, i] = self.expert_results[i][:,1] 
         
-        extended2 = torch.zeros((self.genes, len(expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
+        extended2 = torch.zeros((self.genes, len(self.expert_results)), dtype = torch.float, requires_grad = True).to(devices[0])
 
-        for i in range(len(expert_results)):
-            extended2[:, i] = expert_results[i][:,0]
+        for i in range(len(self.expert_results)):
+            extended2[:, i] = self.expert_results[i][:,0]
         
         results = torch.sum(weights * extended, dim = 1)
         results2 = torch.sum(weights * extended2, dim = 1)
