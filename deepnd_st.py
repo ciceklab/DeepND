@@ -240,10 +240,10 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                     att_leak_prevention[data.validation_mask] = 0.0
                     all_att[i] += att_leak_prevention
                     
-                    pre_att_buffer = model.expert_results[:,i]
+                    pre_att_buffer = model.expert_results[i]
                     pre_att_buffer[data.train_mask] = 0.0
                     pre_att_buffer[data.validation_mask] = 0.0
-                    pre_att += pre_att_buffer 
+                    pre_att[i] += pre_att_buffer 
                 
                 # ------------------------------------------------------------- 
         print("-"*10)
