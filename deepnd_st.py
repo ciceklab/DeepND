@@ -119,7 +119,7 @@ def deepnd_st(root, path, input_size, mode, trial, k, diseasename , devices, pfc
                 validation_mask = [e1_gene_indices[index] for index in k_e1_perm[k2 * math.ceil(counts[0]/k): min(counts[0], (k2 + 1) * math.ceil(counts[0]/k)) ] ]
     
                 # Add negative genes to validation mask
-                validation_mask +=  [n_bs_tada_intersect_indices[item] for item in k_neg_perm[k2 * math.ceil(counts[3]/k) : min(neg_gene_count , (k2 + 1) * math.ceil(counts[3]/k))] ]
+                validation_mask +=  [n_bs_tada_intersect_indices[item] for item in k_neg_perm[k2 * math.ceil(counts[3]/k) : min(counts[3] , (k2 + 1) * math.ceil(counts[3]/k))] ]
                 data.auc_mask = validation_mask.copy()
                 
                 print('Validation Gene(s):', [gene_names_list[i] for i in validation_mask])
