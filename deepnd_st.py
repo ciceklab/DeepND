@@ -47,7 +47,7 @@ def deepnd_st(root, path, input_size, mode, trial, k, diseasename , devices, pfc
         data, features = loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD")
         
     # NETWORKS
-    pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, mask=[10]) 
+    pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, mask=[11]) 
     
     # MODEL CONSTRUCTION
     model = DeepND_ST(devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize=input_size, unit=input_size)
