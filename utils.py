@@ -243,6 +243,7 @@ def loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD"):
     
     data = Data(x=features)
     data = data.to(devices[0])
+    
     data.y = y.to(devices[0])
     features = []
     for i in range (len(devices)):

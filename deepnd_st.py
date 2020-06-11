@@ -27,7 +27,7 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
     geneDict = constructGeneDictionary(root + "Data/hugogenes_entrez.txt")
     gene_names_list = [str(item) for item in geneNames_all]
     
-    #GOLD STANDARDS
+    # GOLD STANDARDS
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
     
