@@ -93,38 +93,38 @@ def deepnd_st(root, path, input_size, mode, trial, k, diseasename , devices, pfc
         usege, cached =  memoryUpdate(usage, cached)
         for k1 in range(k):
         
-            e1mask = [e1_gene_indices[index] for index in e1_perm[k1 * counts[0]: min(e1_gene_count, (k1 + 1) * counts[0]) ] ]
+            e1mask = [e1_gene_indices[index] for index in e1_perm[k1 * math.ceil(counts[0]/k): min(counts[0], (k1 + 1) * math.ceil(counts[0]/k)) ] ]
             data.e1mask = e1mask.copy()
-            negmask =  [n_bs_tada_intersect_indices[item] for item in neg_perm[k1 * counts[3] : min(neg_gene_count , (k1 + 1) * counts[3])] ]
+            negmask =  [n_bs_tada_intersect_indices[item] for item in neg_perm[k1 * math.ceil(counts[3]/k) : min(counts[3] , (k1 + 1) * math.ceil(counts[3]/k))] ]
             data.negmask = negmask.copy()
             
-            test_mask = [e1_gene_indices[index] for index in e1_perm[k1 * counts[0]: min(e1_gene_count, (k1 + 1) * counts[0]) ] ]
-            test_mask +=  [n_bs_tada_intersect_indices[item] for item in neg_perm[k1 * counts[3] : min(neg_gene_count , (k1 + 1) * counts[3])] ]
+            test_mask = [e1_gene_indices[index] for index in e1_perm[k1 * math.ceil(counts[0]/k): min(counts[0], (k1 + 1) * math.ceil(counts[0]/k)) ] ]
+            test_mask +=  [n_bs_tada_intersect_indices[item] for item in neg_perm[k1 * math.ceil(counts[3]/k) : min(counts[3] , (k1 + 1) * math.ceil(counts[3]/k))] ]
             data.test_mask = test_mask.copy()
             
             print("Test Mask Length After E1:", len(test_mask))
             print('Test Gene(s):', [gene_names_list[i] for i in test_mask])
             
-            test_mask += [e2_gene_indices[index] for index in e2_perm[(k1) * counts[1]: min(e2_gene_count, (k1 + 1) * counts[1]) ] ] 
-            test_mask += [e3e4_gene_indices[index] for index in e3e4_perm[(k1) * counts[2]: min(e3e4_gene_count, (k1 + 1) * counts[2]) ] ] 
+            test_mask += [e2_gene_indices[index] for index in e2_perm[(k1) * math.ceil(counts[1]/k): min(counts[1], (k1 + 1) * math.ceil(counts[1]/k)) ] ] 
+            test_mask += [e3e4_gene_indices[index] for index in e3e4_perm[(k1) * math.ceil(counts[2]/k): min(counts[2], (k1 + 1) * math.ceil(counts[2]/k)) ] ] 
             
-            k_e1_perm = np.delete(e1_perm,np.s_[k1*counts[0]:min(e1_gene_count,(k1 + 1) * counts[0])],axis=0)
-            k_neg_perm = np.delete(neg_perm,np.s_[k1 * counts[3]: min(neg_gene_count, (k1 + 1) * counts[3]) ],axis=0)
-            k_e2_perm = np.delete(e2_perm,np.s_[k1 * counts[1]: min(e2_gene_count, (k1 + 1) * counts[1]) ],axis=0)
-            k_e3e4_perm = np.delete(e3e4_perm,np.s_[k1 * counts[2]: min(e3e4_gene_count, (k1 + 1) * counts[2]) ],axis=0)
+            k_e1_perm = np.delete(e1_perm,np.s_[k1*math.ceil(counts[0]/k):min(counts[0],(k1 + 1) * math.ceil(counts[0]/k))],axis=0)
+            k_neg_perm = np.delete(neg_perm,np.s_[k1 * math.ceil(counts[3]/k): min(counts[3], (k1 + 1) * math.ceil(counts[3]/k)) ],axis=0)
+            k_e2_perm = np.delete(e2_perm,np.s_[k1 * math.ceil(counts[1]/k): min(counts[1], (k1 + 1) * math.ceil(counts[1]/k)) ],axis=0)
+            k_e3e4_perm = np.delete(e3e4_perm,np.s_[k1 * math.ceil(counts[2]/k): min(counts[2], (k1 + 1) * math.ceil(counts[2]/k)) ],axis=0)
             
             for k2 in range(k-1): # K-FOLD Cross Validation
                 print("Fold", k1+1, "_",  k2+1, "of Trial", j+1)
             
-                validation_mask = [e1_gene_indices[index] for index in k_e1_perm[k2 * counts[0]: min(e1_gene_count, (k2 + 1) * counts[0]) ] ]
+                validation_mask = [e1_gene_indices[index] for index in k_e1_perm[k2 * math.ceil(counts[0]/k): min(counts[0], (k2 + 1) * math.ceil(counts[0]/k)) ] ]
     
                 # Add negative genes to validation mask
-                validation_mask +=  [n_bs_tada_intersect_indices[item] for item in k_neg_perm[k2 * counts[3] : min(neg_gene_count , (k2 + 1) * counts[3])] ]
+                validation_mask +=  [n_bs_tada_intersect_indices[item] for item in k_neg_perm[k2 * math.ceil(counts[3]/k) : min(neg_gene_count , (k2 + 1) * math.ceil(counts[3]/k))] ]
                 data.auc_mask = validation_mask.copy()
                 
                 print('Validation Gene(s):', [gene_names_list[i] for i in validation_mask])
-                validation_mask += [e2_gene_indices[index] for index in k_e2_perm[(i) * counts[1]: min(e2_gene_count, (i + 1) * counts[1]) ] ] 
-                validation_mask += [e3e4_gene_indices[index] for index in k_e3e4_perm[(i) * counts[2]: min(e3e4_gene_count, (i + 1) * counts[2]) ] ] 
+                validation_mask += [e2_gene_indices[index] for index in k_e2_perm[(i) * math.ceil(counts[1]/k): min(counts[1], (i + 1) * math.ceil(counts[1]/k)) ] ] 
+                validation_mask += [e3e4_gene_indices[index] for index in k_e3e4_perm[(i) * math.ceil(counts[2]/k): min(counts[2], (i + 1) * math.ceil(counts[2]/k)) ] ] 
             
                 # Construct Train Mask
                 train_mask = g_bs_tada_intersect_indices + n_bs_tada_intersect_indices
