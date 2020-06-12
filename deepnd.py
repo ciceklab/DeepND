@@ -16,7 +16,6 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
 from torch.autograd import Variable
 from sklearn.metrics import average_precision_score, roc_auc_score
-from scipy.stats import mannwhitneyu
 import time
 from models  import *
 from utils import *
@@ -40,8 +39,8 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
 
     # FEATURES
 
-    data_asd, featuresasd = loadFeatures(root, y1, geneNames_all, devices, diseasename = "ID")
-    data_id, featuresid = loadFeatures(root, y2, geneNames_all, devices, diseasename = "ASD")
+    data_asd, featuresasd = loadFeatures(root, y1, geneNames_all, devices, diseasename = "ASD")
+    data_id, featuresid = loadFeatures(root, y2, geneNames_all, devices, diseasename = "ID")
     
 
     commonfeatures = np.load(root + "Data/Multi_TADA_Features.npy")
@@ -64,6 +63,8 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
     average_att_gold_e1asd  = []
     average_att_gold_e1e2asd = []
     average_att_gold_negasd = []
+    all_att_asd = []
+    pre_att_asd = []
     
     for i in range(network_count * 4):
         average_attasd.append(0.0)
@@ -73,7 +74,9 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
         average_att_gold_e1asd.append(0.0)
         average_att_gold_e1e2asd.append(0.0)
         average_att_gold_negasd.append(0.0)
-        
+        all_att_asd.append(0.0)
+        pre_att_asd.append(0.0)
+    
     # ID
     average_attid = []
     average_att_goldid = []
@@ -82,6 +85,8 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
     average_att_gold_e1id  = []
     average_att_gold_e1e2id = []
     average_att_gold_negid = []
+    all_att_id = []
+    pre_att_id = []
     
     for i in range(network_count * 4):
         average_attid.append(0.0)
@@ -91,16 +96,16 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
         average_att_gold_e1id.append(0.0)
         average_att_gold_e1e2id.append(0.0)
         average_att_gold_negid.append(0.0)
-    
+        all_att_id.append(0.0)
+        pre_att_id.append(0.0)
+        
     predictions_asd = torch.zeros(commonfeatures.x.shape[0],1)
     predictions_id = torch.zeros(commonfeatures.x.shape[0],1)
     # Emtpy lists for tracking performance metrics and memory usage
     aupr_asd = []
     aucs_asd = [] 
-    up_asd = []
     aupr_id = []
-    aucs_id = []  
-    up_id =[]
+    aucs_id = []
     usage = 0
     cached = 0
     
@@ -240,10 +245,10 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                         out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                         _, pred1 = out1.max(dim=1)
                         _, pred2 = out2.max(dim=1)
-                        correct1 = pred1[data_asd.auc_mask].eq(data_asd.y1[data_asd.auc_mask]).sum().item()
-                        correct2 = pred2[data_id.auc_mask].eq(data_id.y2[data_id.auc_mask]).sum().item()
-                        correctTrain1 = pred1[data_asd.train_mask].eq(data_asd.y1[data_asd.train_mask]).sum().item()
-                        correctTrain2 = pred2[data_id.train_mask].eq(data_id.y2[data_id.train_mask]).sum().item()
+                        correct1 = pred1[data_asd.auc_mask].eq(data_asd.y[data_asd.auc_mask]).sum().item()
+                        correct2 = pred2[data_id.auc_mask].eq(data_id.y[data_id.auc_mask]).sum().item()
+                        correctTrain1 = pred1[data_asd.train_mask].eq(data_asd.y[data_asd.train_mask]).sum().item()
+                        correctTrain2 = pred2[data_id.train_mask].eq(data_id.y[data_id.train_mask]).sum().item()
                         acc1 = correct1 / len(data_asd.auc_mask)
                         acc2 = correct2 / len(data_id.auc_mask)
                         accTrain1 = correctTrain1 / len(data_asd.train_mask)
@@ -266,8 +271,8 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                         out1,out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                         
                         # You can adjust class weights using values in FloatTensor
-                        loss1 = F.nll_loss(out1[data_asd.train_mask], data_asd.y1[data_asd.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
-                        loss2 = F.nll_loss(out2[data_id.train_mask], data_id.y2[data_id.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
+                        loss1 = F.nll_loss(out1[data_asd.train_mask], data_asd.y[data_asd.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
+                        loss2 = F.nll_loss(out2[data_id.train_mask], data_id.y[data_id.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
                         
                         loss1 = (loss1 * sample_weights_asd).mean()
                         loss2 = (loss2 * sample_weights_id).mean()
@@ -287,16 +292,16 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                             out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                             _, pred1 = out1.max(dim=1)
                             _, pred2 = out2.max(dim=1)
-                            correct1 = pred1[data_asd.auc_mask].eq(data_asd.y1[data_asd.auc_mask]).sum().item()
-                            correct2 = pred2[data_id.auc_mask].eq(data_id.y2[data_id.auc_mask]).sum().item()
-                            correctTrain1 = pred1[data_asd.train_mask].eq(data_asd.y1[data_asd.train_mask]).sum().item()
-                            correctTrain2 = pred2[data_id.train_mask].eq(data_id.y2[data_id.train_mask]).sum().item()
+                            correct1 = pred1[data_asd.auc_mask].eq(data_asd.y[data_asd.auc_mask]).sum().item()
+                            correct2 = pred2[data_id.auc_mask].eq(data_id.y[data_id.auc_mask]).sum().item()
+                            correctTrain1 = pred1[data_asd.train_mask].eq(data_asd.y[data_asd.train_mask]).sum().item()
+                            correctTrain2 = pred2[data_id.train_mask].eq(data_id.y[data_id.train_mask]).sum().item()
                             acc1 = correct1 / len(data_asd.auc_mask)
                             acc2 = correct2 / len(data_id.auc_mask)
                             accTrain1 = correctTrain1 / len(data_asd.train_mask)
                             accTrain2 = correctTrain2 / len(data_id.train_mask)
                             
-                            valLoss = [F.nll_loss(out1[data_asd.auc_mask], data_asd.y1[data_asd.auc_mask]).mean(), F.nll_loss(out2[data_id.auc_mask], data_id.y2[data_id.auc_mask]).mean()]
+                            valLoss = [F.nll_loss(out1[data_asd.auc_mask], data_asd.y[data_asd.auc_mask]).mean(), F.nll_loss(out2[data_id.auc_mask], data_id.y[data_id.auc_mask]).mean()]
                             asdvloss.append(valLoss[0].cpu().item())
                             idvloss.append(valLoss[1].cpu().item())
                         
@@ -324,8 +329,8 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                                     early_stop_count_asd = 0
                                     print("Epoch:", epoch,", Loss ASD:",loss1.mean().item(),", Loss ID:",loss2.mean().item())
                                     print("ASD slowed down!")                            
-                                    optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=lrasd/20.0, weight_decay=wd ) 
-                                    optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=lrc/20.0, weight_decay=wd )
+                                    optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr=l_rate[1]/20.0, weight_decay=wd ) 
+                                    optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr=l_rate[0]/20.0, weight_decay=wd )
                                     ASDFit = True
                                 
                             if valLoss[1] < old_loss[1]: # ID Early fit
@@ -346,8 +351,8 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                                     early_stop_count_id = 0
                                     print("Epoch:", epoch,", Loss ASD:",loss1.mean().item(),", Loss ID:",loss2.mean().item())
                                     print("ID slowed down!")    
-                                    optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr = lrid/20.0, weight_decay=wd ) 
-                                    optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr = lrc/20.0, weight_decay=wd )
+                                    optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr = l_rate[2]/20.0, weight_decay=wd ) 
+                                    optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr = l_rate[0]/20.0, weight_decay=wd )
                                     IDFit = True
                                 
                             if IDFit and ASDFit: 
@@ -369,14 +374,11 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                 adjusted_mean_scores[data_id.validation_mask] = 0.0
                 predictions_id[:,0] += adjusted_mean_scores
                 # -------------------------------------------------------------
-                area_under_roc = roc_auc_score(data_asd.y1.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1])
+                area_under_roc = roc_auc_score(data_asd.y.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1])
                 aucs_asd.append(area_under_roc)                                            
                 print("ASD AUC", aucs_asd[-1])
-                aupr_asd.append(average_precision_score(data_asd.y1.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1]))
+                aupr_asd.append(average_precision_score(data_asd.y.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1]))
                 print("ASD AUPR", aupr_asd[-1])
-                
-                u,p = mannwhitneyu((F.softmax(out1.cpu()[data_asd.e1mask, :],dim=1))[:,1],(F.softmax(out1.cpu()[data_asd.negmask, :],dim=1))[:,1])
-                up_asd.append([u,p])
                 
                 for i in range(network_count * 4):
                     average_attasd[i] += torch.mean(model.ASDBranch.experts[:,i]).item()
@@ -398,14 +400,11 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                     pre_att_asd[i] += pre_att_buffer_asd 
                 
                 # -------------------------------------------------------------
-                area_under_roc = roc_auc_score(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1])
+                area_under_roc = roc_auc_score(data_id.y.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1])
                 aucs_id.append(area_under_roc)                                            
                 print("ID AUC", area_under_roc)
-                aupr_id.append(average_precision_score(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1]))
+                aupr_id.append(average_precision_score(data_id.y.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1]))
                 print("ID AUPR", aupr_id[-1])
-                
-                u,p = mannwhitneyu((F.softmax(out2.cpu()[data_id.e1mask, :],dim=1))[:,1],(F.softmax(out2.cpu()[data_id.negmask, :],dim=1))[:,1])
-                up_id.append([u,p])
     
                 for i in range(network_count * 4):
                     average_attid[i] += torch.mean(model.IDBranch.experts[:,i]).item()

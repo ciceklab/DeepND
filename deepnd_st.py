@@ -15,7 +15,6 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
 from torch.autograd import Variable
 from sklearn.metrics import average_precision_score, roc_auc_score
-from scipy.stats import mannwhitneyu
 import time
 from models  import *
 from utils import *
@@ -77,7 +76,6 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
     
     aucs = []
     aupr = []
-    UsandPs = []
     predictions = torch.zeros((len(geneNames_all),1), dtype = torch.float)      
     usage, cached = memoryUpdate()
     # Early Stop Configuration
@@ -223,9 +221,6 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                 average_precision = average_precision_score(data.y.cpu()[data.test_mask],(F.softmax(out.cpu()[data.test_mask, :],dim=1))[:,1])   
                 aupr.append(average_precision)
                 print('Average precision-recall score: {0:0.2f}'.format(average_precision))
-                
-                u,p = mannwhitneyu((F.softmax(out.cpu()[data.e1mask, :],dim=1))[:,1],(F.softmax(out.cpu()[data.negmask, :],dim=1))[:,1])
-                UsandPs.append([u,p])
                 
                 for i in range(network_count * 4):
                     average_att[i] += torch.mean(model.experts[:,i]).item()

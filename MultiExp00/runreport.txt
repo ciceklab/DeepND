@@ -1,0 +1,55 @@
+Number of networks per region: 1
+Generated test results, i.e. no training process.
+Done in 0:06:24.626921 hh:mm:ss.
+Disease : ASD
+--------------------
+
+Mean (μ) AUC of All Runs:0.645102
+ σ of AUCs of All Runs:0.149388
+ Median of AUCs of All Runs:0.629272
+
+ Mean (μ) APRC of All Runs:0.125236
+ σ of AUPR of All Runs:0.094056
+ Median of AUPR of All Runs:0.105669
+Disease : ID
+--------------------
+
+Mean (μ) AUC of All Runs:0.550659
+ σ of AUCs of All Runs:0.113277
+ Median of AUCs of All Runs:0.500000
+
+ Mean (μ) APRC of All Runs:0.087002
+ σ of AUPR of All Runs:0.084115
+ Median of AUPR of All Runs:0.050398
+********************************************************************************
+Multi AUC:0.901108
+--------------------
+Multi AUC:0.641614
+--------------------
+Multi AUC:0.458703
+--------------------
+Multi AUC:0.616930
+--------------------
+Multi AUC:0.752803
+--------------------
+Multi AUC:0.499458
+--------------------
+Multi AUPR:0.304903
+Multi AUPR:0.144578
+--------------------
+********************************************************************************
+Multi AUC:0.803955
+--------------------
+Multi AUC:0.500000
+--------------------
+Multi AUC:0.500000
+--------------------
+Multi AUC:0.500000
+--------------------
+Multi AUC:0.500000
+--------------------
+Multi AUC:0.500000
+--------------------
+Multi AUPR:0.275071
+Multi AUPR:0.050398
+--------------------
