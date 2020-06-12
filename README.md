@@ -29,4 +29,6 @@ pillow<br/>
 
 ## Install
 
-After downloading all files, unwrap the conda enviroment named "deepnd-legacy.yml" and activate.
+In order to instal required packages, either one of following methods can be used. 
+1. After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate.
+2. Separately install all packages listed under "Software Requirements : Dependencies" section with their given versions. 
