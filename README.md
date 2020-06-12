@@ -10,6 +10,11 @@ DeepND ASD &amp; ID
 
 ## Overview
 
+Autism Spectrum Disorder (ASD) is a heterogeneous  neurodevelopmental disorder associated with social and communication difficulties, self-stimulatory and repetitive behaviors, and arrow or overly-focused interests. Evidence from recent studies suggests that genetic architectures of neuropsychiatric disorders overlap. Intellectual Disability (ID) is one of such comorbid disorders characterized by significant limitations both in intellectual functioning (reasoning, learning, problem solving) and in adaptive behavior, which covers a range of everyday social and practical skills. A common way of finding risk genes for both disorders is to run a model twice for each disorder and then intersect the results, which fails to capture the common signal between two disorders. Using such a technique fails to utilize the comorbidity of these disorders, that is a signal coming from ASD dataset is informative for ID as well, and vice-versa.</br>
+
+DeepND is a deep neural network model developed to provide such functionalities for analyzing isolated and common genetic signals of ASD and ID. In this package, we provide feature sets, gold standards and example spatio-temporal brain coexpression networks with training and test processes of DeepND, both for single task and multi task modes. 
+
+
 ## Repository Contents
 - Data : Feature sets, gold standards and example networks
 - ASDExp00 : Example output for DeepND-ST
