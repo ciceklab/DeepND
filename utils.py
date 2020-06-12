@@ -27,6 +27,15 @@ def memoryUpdate(usage = 0, cached = 0):
     cached = max(cached, current_cached)
     print("GPU Memory Usage:", usage / 10**9, "GB Used, ", cached / 10**9, "GB Cached")
     return usage, cached
+    
+def maskCheck(masks):
+    l  = []
+    for mask in masks:
+        l.append(len(mask))
+    l = set(l)
+    l = list(l)
+    if len(l) > 1:
+        raise ValueError('GPU masks and network region has different munbers!')
 
 def weight_reset(m):
     if isinstance(m, GCNConv) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm1d):
@@ -251,48 +260,82 @@ def loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD"):
         features.append(feature.to(devices[i]))
     return data, features
 
-def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root = "", diseasename="ASD", trial = 10, k = 5):
-        predictions /= float(trial*k*(k-1))
-        predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
-        fpred = open( root + diseasename + "Exp" + str(experiment) + "test/predict.txt","w+")
-        fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
-        for index,row in enumerate(predictions):
-            if str(geneNames_all[index]) in geneDict:
-                fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0   ) )
-            else:
-                fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
-        fpred.close()
+def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, path = "", diseasename="ASD", trial = 10, k = 5):
+    predictions /= float(trial*k*(k-1))
+    predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
+    fpred = open( path + "/predict_" + lower(diseasename) +".txt","w+")
+    fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
+    for index,row in enumerate(predictions):
+        if str(geneNames_all[index]) in geneDict:
+            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0   ) )
+        else:
+            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
+    fpred.close()
                                  
-def writeExperimentSatats( aucs, aupr, root = "", diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
-    f = open( root + diseasename + "Exp" + str(experiment) + "test/runreport.txt","w")
-    if not mode : 
-        f.write("This file contains only test results i.e. no training process.")
-    #Experiment Stats
-    f.write("Disease : %s\n" % diseasename)
+def writeExperimentStats( aucs, aupr, path = "", diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
+    
+    f = open( path + "/runreport.txt","w")
     f.write("Number of networks per region: %d\n" % network_count)
     print("Number of networks per region:" , network_count)
-    f.write("\nMean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs) )
-    print(" Mean(\u03BC) AUC of All Runs:", np.mean(aucs) )
-    f.write(" \u03C3 of AUCs of All Runs:%f\n" % np.std(aucs) )
-    print("\u03C3 of AUCs of All Runs:", np.std(aucs) )
-    f.write(" Median of AUCs of All Runs:%f\n" % np.median(aucs) )
-    print(" Meadian of AUCs of All Runs:", np.median(aucs) )
-    f.write("\n Mean (\u03BC) APRC of All Runs:%f\n" % np.mean(aupr) )
-    print(" Mean(\u03BC) AUPR of All Runs:", np.mean(aupr) )
-    f.write(" \u03C3 of AUPR of All Runs:%f\n" % np.std(aupr) )
-    print(" \u03C3 of AUPR of All Runs:", np.std(aupr) )
-    f.write(" Median of AUPR of All Runs:%f\n" % np.median(aupr) )
-    print("Meadian of AUCs of All Runs:", np.median(aupr) )
+    if not mode:
+        f.write("Generated test results, i.e. no training process.")
     f.write("\nDone in %s hh:mm:ss.\n" % timedelta( seconds = (time.time()-init_time) ) )
-                                 
-    f.write("*"*80+"\n") 
-    for i in range(len(aucs)):
-        f.write("%s AUC:%f\n" % (diseasename, aucs[i]))    
-    f.write("-"*20+"\n") 
-    for i in range(len(aupr)):
-        f.write("%s AUPR:%f\n" % (diseasename , aupr[i]))    
-    f.write("-"*20+"\n") 
+    if diseasename == "Multi":
+        # Multi Task Experiment Stats
+        diseases = ["ASD", "ID"]
+        for i in range(2):
+            f.write("Disease : %s\n" % diseases[i])
+            print("Disease :", diseases[i])
+            f.write("-"*20+"\n")
+            f.write("\nMean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs[i]) )
+            print(" Mean(\u03BC) AUC of All Runs:", np.mean(aucs[i]) )
+            f.write(" \u03C3 of AUCs of All Runs:%f\n" % np.std(aucs[i]) )
+            print("\u03C3 of AUCs of All Runs:", np.std(aucs[i]) )
+            f.write(" Median of AUCs of All Runs:%f\n" % np.median(aucs[i]) )
+            print(" Meadian of AUCs of All Runs:", np.median(aucs[i]) )
+            f.write("\n Mean (\u03BC) APRC of All Runs:%f\n" % np.mean(aupr[i]) )
+            print(" Mean(\u03BC) AUPR of All Runs:", np.mean(aupr[i]) )
+            f.write(" \u03C3 of AUPR of All Runs:%f\n" % np.std(aupr[i]) )
+            print(" \u03C3 of AUPR of All Runs:", np.std(aupr[i]) )
+            f.write(" Median of AUPR of All Runs:%f\n" % np.median(aupr[i]) )
+            print("Meadian of AUCs of All Runs:", np.median(aupr[i]) )
+        for i in range(2):            
+            f.write("*"*80+"\n") 
+            for j in range(len(aucs[i])):
+                f.write("%s AUC:%f\n" % (diseasename, aucs[i][j]))    
+                f.write("-"*20+"\n") 
+            for j in range(len(aupr)):
+                f.write("%s AUPR:%f\n" % (diseasename , aupr[i][j]))    
+            f.write("-"*20+"\n") 
+        
+    else: 
+        # Single Task Experiment Stats
+        f.write("Disease : %s\n" % diseasename)
+        print("Disease :", diseasename)
+        f.write("-"*20+"\n")
+        f.write("\nMean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs) )
+        print(" Mean(\u03BC) AUC of All Runs:", np.mean(aucs) )
+        f.write(" \u03C3 of AUCs of All Runs:%f\n" % np.std(aucs) )
+        print("\u03C3 of AUCs of All Runs:", np.std(aucs) )
+        f.write(" Median of AUCs of All Runs:%f\n" % np.median(aucs) )
+        print(" Meadian of AUCs of All Runs:", np.median(aucs) )
+        f.write("\n Mean (\u03BC) APRC of All Runs:%f\n" % np.mean(aupr) )
+        print(" Mean(\u03BC) AUPR of All Runs:", np.mean(aupr) )
+        f.write(" \u03C3 of AUPR of All Runs:%f\n" % np.std(aupr) )
+        print(" \u03C3 of AUPR of All Runs:", np.std(aupr) )
+        f.write(" Median of AUPR of All Runs:%f\n" % np.median(aupr) )
+        print("Meadian of AUCs of All Runs:", np.median(aupr) )
+                                    
+        f.write("*"*80+"\n") 
+        for i in range(len(aucs)):
+            f.write("%s AUC:%f\n" % (diseasename, aucs[i]))    
+        f.write("-"*20+"\n") 
+        for i in range(len(aupr)):
+            f.write("%s AUPR:%f\n" % (diseasename , aupr[i]))    
+        f.write("-"*20+"\n") 
+        
     f.close()
-                                 
-    print("Generated results for ", diseasename, " Exp: ", experiment)
+    print("Generated results for ", diseasename )
     print("Done in ", timedelta( seconds = (time.time()-init_time) ) , "hh:mm:ss." )
+       
+

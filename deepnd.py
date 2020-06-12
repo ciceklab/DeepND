@@ -21,8 +21,8 @@ from scipy.stats import mannwhitneyu
 from models  import *
 from utils import *
 
-def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state,experiment):
-    network_count = len(pfcgpumask)
+def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks):
+    network_count = len(networks)
     geneNames_all = pd.read_csv(root + "Data/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
     geneDict = constructGeneDictionary(root + "Data/hugogenes_entrez.txt")
@@ -48,7 +48,10 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
     commonfeatures = (commonfeatures - torch.mean(commonfeatures,0)) / (torch.std(commonfeatures,0))
     commonfeatures = Data(x=commonfeatures)
     features = commonfeatures.x.to(devices[0]) 
-
+    
+    # NETWORKS
+    pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, mask = networks) 
+    
     # MODEL CONSTRUCTION
     model = DeepND_ST(devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize=input_size, unit=input_size)
     
@@ -162,15 +165,15 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                 # Add leftout E1 genes to validation mask
                 
                 # ASD
-                validation_mask_asd = [asd_e1_gene_indices[index] for index in asd_k_e1_perm[(k2) * asd_e1_fold_size: min(asd_counts[0], (k2 + 1) * asd_e1_fold_size) ] ] 
+                validation_mask_asd = [asd_e1_gene_indices[index] for index in asd_k_e1_perm[(k2) * math.ceil(asd_counts[0]/k): min(asd_counts[0], (k2 + 1) * math.ceil(asd_counts[0]/k)) ] ] 
                 print("ASD Validation Mask Length After E1:", len(validation_mask_asd))
                 print('ASD Validation Gene(s):', [gene_names_list[i] for i in validation_mask_asd])
                 # Add negative genes to validation mask
-                validation_mask_asd +=  [n_bs_tada_intersect_indices_asd[item] for item in asd_k_neg_perm[k2 * asd_neg_fold_size : min(asd_neg_gene_count , (k2 + 1) * asd_neg_fold_size)] ]
+                validation_mask_asd +=  [n_bs_tada_intersect_indices_asd[item] for item in asd_k_neg_perm[k2 * math.ceil(asd_counts[3]/k) : min(asd_counts[3] , (k2 + 1) * math.ceil(asd_counts[3]/k))] ]
                 data_asd.auc_mask = validation_mask_asd.copy()
                 #print("Supposed AUC Mask Length:", len(data.auc_mask))
-                validation_mask_asd += [asd_e2_gene_indices[index] for index in asd_k_e2_perm[(k2) * asd_e2_fold_size: min(asd_e2_gene_count, (k2 + 1) * asd_e2_fold_size) ] ] 
-                validation_mask_asd += [asd_e3e4_gene_indices[index] for index in asd_k_e3e4_perm[(k2) * asd_e3e4_fold_size: min(asd_e3e4_gene_count, (k2 + 1) * asd_e3e4_fold_size) ] ] 
+                validation_mask_asd += [asd_e2_gene_indices[index] for index in asd_k_e2_perm[(k2) * math.ceil(asd_counts[1]/k): min(asd_counts[1], (k2 + 1) * math.ceil(asd_counts[1]/k)) ] ] 
+                validation_mask_asd += [asd_e3e4_gene_indices[index] for index in asd_k_e3e4_perm[(k2) * math.ceil(asd_counts[2]/k): min(asd_counts[2], (k2 + 1) * math.ceil(asd_counts[2]/k)) ] ] 
                 
                 # Construct Train Mask
                 train_mask_asd = g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd
@@ -195,15 +198,15 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                 data_asd.validation_mask = torch.tensor(validation_mask_asd, dtype=torch.long)
                     
                 # ID
-                validation_mask_id = [id_e1_gene_indices[index] for index in id_k_e1_perm[(k2) * id_e1_fold_size: min(id_e1_gene_count, (k2 + 1) * id_e1_fold_size) ] ] 
+                validation_mask_id = [id_e1_gene_indices[index] for index in id_k_e1_perm[(k2) * math.ceil(id_counts[0]/k): min(id_counts[0], (k2 + 1) * math.ceil(id_counts[0]/k)) ] ] 
                 print("ID Validation Mask Length After E1:", len(validation_mask_id))
                 print('ID Validation Gene(s):', [gene_names_list[i] for i in validation_mask_id])
                 # Add negative genes to validation mask
-                validation_mask_id +=  [n_bs_tada_intersect_indices_id[item] for item in id_k_neg_perm[k2 * id_neg_fold_size : min(id_neg_gene_count , (k2 + 1) * id_neg_fold_size)] ]
+                validation_mask_id +=  [n_bs_tada_intersect_indices_id[item] for item in id_k_neg_perm[k2 * math.ceil(id_counts[3]/k) : min(id_counts[3] , (k2 + 1) * math.ceil(id_counts[3]/k))] ]
                 data_id.auc_mask = validation_mask_id.copy()
                 #print("Supposed AUC Mask Length:", len(data.auc_mask))
-                validation_mask_id += [id_e2_gene_indices[index] for index in id_k_e2_perm[(k2) * id_e2_fold_size: min(id_e2_gene_count, (k2 + 1) * id_e2_fold_size) ] ] 
-                validation_mask_id += [id_e3e4_gene_indices[index] for index in id_k_e3e4_perm[(k2) * id_e3e4_fold_size: min(id_e3e4_gene_count, (k2 + 1) * id_e3e4_fold_size) ] ] 
+                validation_mask_id += [id_e2_gene_indices[index] for index in id_k_e2_perm[(k2) * math.ceil(id_counts[1]/k): min(id_counts[1], (k2 + 1) * math.ceil(id_counts[1]/k)) ] ] 
+                validation_mask_id += [id_e3e4_gene_indices[index] for index in id_k_e3e4_perm[(k2) * math.ceil(id_counts[2]/k): min(id_counts[2], (k2 + 1) * math.ceil(id_counts[2]/k)) ] ] 
                 
                 # Construct Train Mask
                 train_mask_id = g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id
@@ -233,7 +236,7 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                     model.load_state_dict(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
                     model = model.eval()
                     with torch.no_grad():
-                        out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                        out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                         _, pred1 = out1.max(dim=1)
                         _, pred2 = out2.max(dim=1)
                         correct1 = pred1[data_asd.auc_mask].eq(data_asd.y1[data_asd.auc_mask]).sum().item()
@@ -246,14 +249,11 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                         accTrain2 = correctTrain2 / len(data_id.train_mask)
                 else:
                     # Train mode
-                    model.apply(unfreeze_layer)
                     model.apply(weight_reset)
-                    optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr = lrc, weight_decay = wd )   
-                    optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr = lrasd, weight_decay = wd )   
-                    optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr = lrid, weight_decay = wd ) 
+                    optimizerc = torch.optim.Adam(model.commonmlp.parameters(), lr = l_rate[0], weight_decay = wd )   
+                    optimizerasd = torch.optim.Adam( model.ASDBranch.parameters(), lr = l_rate[1], weight_decay = wd )   
+                    optimizerid = torch.optim.Adam(model.IDBranch.parameters(), lr = l_rate[2], weight_decay = wd ) 
                     
-                    early_stop_count_asd = 0
-                    early_stop_count_id = 0
                     ASDFit = False
                     IDFit = False
                 
@@ -262,7 +262,7 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                         optimizerc.zero_grad()
                         optimizerasd.zero_grad()
                         optimizerid.zero_grad()
-                        out1,out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                        out1,out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                         
                         # You can adjust class weights using values in FloatTensor
                         loss1 = F.nll_loss(out1[data_asd.train_mask], data_asd.y1[data_asd.train_mask], weight = torch.FloatTensor([1.0, 1.0]).to(devices[0]), reduction ='none')
@@ -283,7 +283,7 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                         #----------------------------------------------------------------------------------------#
                         model = model.eval()
                         with torch.no_grad():
-                            out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+                            out1, out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
                             _, pred1 = out1.max(dim=1)
                             _, pred2 = out2.max(dim=1)
                             correct1 = pred1[data_asd.auc_mask].eq(data_asd.y1[data_asd.auc_mask]).sum().item()
@@ -368,9 +368,9 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                 adjusted_mean_scores[data_id.validation_mask] = 0.0
                 predictions_id[:,0] += adjusted_mean_scores
                 # -------------------------------------------------------------
-                fpr["micro"], tpr["micro"], _ = roc_curve(data_asd.y1.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1])
-                aucs_asd.append(auc(fpr["micro"], tpr["micro"]))                                            
-                print("ASD AUC", auc(fpr["micro"], tpr["micro"]))
+                area_under_roc = roc_auc_score(data_asd.y1.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1])
+                aucs_asd.append(area_under_roc)                                            
+                print("ASD AUC", aucs_asd[-1])
                 aupr_asd.append(average_precision_score(data_asd.y1.cpu()[data_asd.test_mask],(F.softmax(out1.cpu()[data_asd.test_mask, :],dim=1))[:,1]))
                 print("ASD AUPR", aupr_asd[-1])
                 
@@ -397,10 +397,9 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                     pre_att_asd[i] += pre_att_buffer_asd 
                 
                 # -------------------------------------------------------------
-                fpr["micro"], tpr["micro"], _ = roc_curve(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1])
-                aucs_id.append(auc(fpr["micro"], tpr["micro"]))                                            
-                print("ID AUC", auc(fpr["micro"], tpr["micro"]))
-                print("ID AUC", auc(fpr["micro"], tpr["micro"]))
+                area_under_roc = roc_auc_score(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1])
+                aucs_id.append(area_under_roc)                                            
+                print("ID AUC", area_under_roc)
                 aupr_id.append(average_precision_score(data_id.y2.cpu()[data_id.test_mask],(F.softmax(out2.cpu()[data_id.test_mask, :],dim=1))[:,1]))
                 print("ID AUPR", aupr_id[-1])
                 
@@ -435,16 +434,11 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
                 print("-"*10)
             
         # -------------------------------------------------------------
-        print("ASD Trial Mean AUC:" + str(np.mean(aucs_asd[-20:])))
-        print("ASD Trial Mean AUPR:" + str(np.mean(aupr_asd[-20:])))    
-        print("ID Trial Mean AUC:" + str(np.mean(aucs_id[-20:])))
-        print("ID Trial Mean AUPR:" + str(np.mean(aupr_id[-20:])))
+        print("ASD Trial Median AUC :" + str( np.median( aucs_asd[- (k*(k-1)) :] )))
+        print("ASD Trial Median AUPR:" + str( np.median( aupr_asd[- (k*(k-1)) :] )))    
+        print("ID Trial Median AUC :" + str( np.median( aucs_id[- (k*(k-1)) :] )))
+        print("ID Trial Median AUPR:" + str( np.median( aupr_id[- (k*(k-1)) :] )))
         
-        print("-"*10)
-        print("ASD Current Median AUC:" + str(np.median(aucs_asd)))
-        print("ASD Current Median AUPR:" + str(np.median(aupr_asd)))    
-        print("ID Current Median AUC:" + str(np.median(aucs_id)))
-        print("ID Current Median AUPR:" + str(np.median(aupr_id)))
         print("-"*80)
     
     ###############################################################################################################################################    
@@ -452,152 +446,14 @@ def deepnd(root, path, input_size, mode, l_rate, trial, k, diseasename , devices
     ###############################################################################################################################################
     
     #ASD final Predictions
-    predictions_asd /= float(trial*k*(k-1))
-    predictions_asd[g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= float(k)
-    
-    fpred = open(path + "/predictasd.txt","w+")
-    fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
-    for index,row in enumerate(predictions_asd):
-        if str(geneNames_all[index]) in geneDict:
-            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes_asd else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes_asd else 0   ) )
-        else:
-            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes_asd else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes_asd else 0 ) )
-    fpred.close()
+    writePrediction(predictions_asd, g_bs_tada_intersect_indices_asd, n_bs_tada_intersect_indices_asd,  path = path, diseasename="ASD", trial = trial, k = k
     
     #ID final Predictions
-    predictions_id /= float(trial*k*(k-1))
-    predictions_id[g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= float(k)
-    
-    fpred = open(path + "/predictid.txt","w+")
-    fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
-    for index,row in enumerate(predictions_id):
-        if str(geneNames_all[index]) in geneDict:
-            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneDict[str(geneNames_all[index])][0]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes_id else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes_id else 0   ) )
-        else:
-            fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes_id else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes_id else 0 ) )
-    fpred.close()
+    writePrediction(predictions_id, g_bs_tada_intersect_indices_id, n_bs_tada_intersect_indices_id,  path = path, diseasename="ID", trial = trial, k = k)
     
     #Experiment Stats
-    f.write("Number of networks per region: %d\n" % network_count)
-    print("Number of networks per region:" , network_count)
+    writeExperimentStats( [aucs_asd, aucs_id], [aupr_asd, aupr_id], path = path , diseasename="Multi", trial = trial, k = k, init_time = init_time, network_count = network_count, mode = mode)
     
-    f.write("\n(ASD) Mean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs_asd) )
-    print("(ASD) Mean(\u03BC) AUC of All Runs:", np.mean(aucs_asd) )
-    f.write("(ASD) \u03C3 of AUCs of All Runs:%f\n" % np.std(aucs_asd) )
-    print("(ASD) \u03C3 of AUCs of All Runs:", np.std(aucs_asd) )
-    f.write("(ASD) Median of AUCs of All Runs:%f\n" % np.median(aucs_asd) )
-    print("(ASD) Meadian of AUCs of All Runs:", np.median(aucs_asd) )
-    
-    f.write("\n(ASD) Mean (\u03BC) APRC of All Runs:%f\n" % np.mean(aupr_asd) )
-    print("(ASD) Mean(\u03BC) AUPR of All Runs:", np.mean(aupr_asd) )
-    f.write("(ASD) \u03C3 of AUPR of All Runs:%f\n" % np.std(aupr_asd) )
-    print("(ASD) \u03C3 of AUPR of All Runs:", np.std(aupr_asd) )
-    f.write("(ASD) Median of AUPR of All Runs:%f\n" % np.median(aupr_asd) )
-    print("(ASD) Meadian of AUCs of All Runs:", np.median(aupr_asd) )
-    
-    f.write("\n(ID)Mean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs_id) )
-    print("(ID)Mean (\u03BC) AUC of All Runs:", np.mean(aucs_id) )
-    f.write("(ID)\u03C3 of AUCs of All Runs:%f\n" % np.std(aucs_id) )
-    print("(ID)\u03C3  of AUCs of All Runs:", np.std(aucs_id) )
-    f.write("(ID)Median of AUCs of All Runs:%f\n" % np.median(aucs_id) )
-    print("(ID)Meadian of AUCs of All Runs:", np.median(aucs_id) )
-    
-    f.write("\n(ID)Mean (\u03BC) AUPR of All Runs:%f\n" % np.mean(aupr_id) )
-    print("(ID)Mean (\u03BC) AUPR of All Runs:", np.mean(aupr_id) )
-    f.write("(ID)\u03C3 of AUPRs of All Runs:%f\n" % np.std(aupr_id) )
-    print("(ID)\u03C3  of AUPRs of All Runs:", np.std(aupr_id) )
-    f.write("(ID)Median of AUPRs of All Runs:%f\n" % np.median(aupr_id) )
-    print("(ID)Meadian of AUPRs of All Runs:", np.median(aupr_id) )
-    
-    t = timedelta(seconds=(time.time()-init_time))
-    f.write("\nDone in %s hh:mm:ss.\n" % t )
-    
-    f.write("*"*80+"\n") 
-    
-    for i in range(len(average_attasd)):
-        average_attasd[i] = average_attasd[i] / (trial*k*(k-1))
-        average_att_goldasd[i] = average_att_goldasd[i] / (trial*k*(k-1))
-        stddev_attasd[i] = stddev_attasd[i] / (trial*k)
-        stddev_att_goldasd[i] = stddev_att_goldasd[i] / (trial*k*(k-1))
-        average_att_gold_e1asd[i] = average_att_gold_e1asd[i] / (trial*k*(k-1))
-        average_att_gold_e1e2asd[i] = average_att_gold_e1e2asd[i] / (trial*k*(k-1))
-        average_att_gold_negasd[i] = average_att_gold_negasd[i] / (trial*k*(k-1))
-        all_att_asd[i] = all_att_asd[i] /(trial*k*(k-1))
-        all_att_asd[i][g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= 5.0
-        pre_att_asd[i] = pre_att_asd[i] /(trial*k*(k-1))
-        pre_att_asd[i][g_bs_tada_intersect_indices_asd + n_bs_tada_intersect_indices_asd] *= 5.0
-    
-    for i in range(network_count * 4):
-        print("ASD Average Attention", i + 1 , " of All Runs:", average_attasd[i])
-        f.write("Average Attention %d of all runs:%f\n" %( (i + 1), average_attasd[i]))
-        f.write("Average Gold Attention %d of all runs:%f\n" %( (i + 1), average_att_goldasd[i]))        
-        f.write("Stddev attention %d of all runs:%f\n" %( (i + 1), stddev_attasd[i]))
-        f.write("Gold Stddev attention %d of all runs:%f\n\n" %( (i + 1), stddev_att_goldasd[i]))
-    
-    for i in range(len(average_attid)):
-        average_attid[i] = average_attid[i] / (trial*k*(k-1))
-        average_att_goldid[i] = average_att_goldid[i] / (trial*k*(k-1))
-        stddev_attid[i] = stddev_attid[i] / (trial*k*(k-1))
-        stddev_att_goldid[i] = stddev_att_goldid[i] / (trial*k*(k-1))
-        average_att_gold_e1id[i] = average_att_gold_e1id[i] / (trial*k*(k-1))
-        average_att_gold_e1e2id[i] = average_att_gold_e1e2id[i] / (trial*k*(k-1))
-        average_att_gold_negid[i] = average_att_gold_negid[i] / (trial*k*(k-1))
-        all_att_id[i] = all_att_id[i] /(trial*k*(k-1))
-        all_att_id[i][g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= 5.0
-        pre_att_id[i] = pre_att_id[i] /(trial*k*(k-1))
-        pre_att_id[i][g_bs_tada_intersect_indices_id + n_bs_tada_intersect_indices_id] *= 5.0
-    
-    for i in range(network_count * 4):
-        print("ID Average Attention", i + 1 , " of All Runs:", average_attid[i])
-        f.write("Average Attention %d of all runs:%f\n" %( (i + 1), average_attid[i]))
-        f.write("Average Gold Attention %d of all runs:%f\n" %( (i + 1), average_att_goldid[i]))        
-        f.write("Stddev attention %d of all runs:%f\n" %( (i + 1), stddev_attid[i]))
-        f.write("Gold Stddev attention %d of all runs:%f\n\n" %( (i + 1), stddev_att_goldid[i]))
-    
-    f.write("*"*80+"\n") 
-    for i in range(len(aucs_asd)):
-        f.write("ASD AUC:%f\n" % (aucs_asd[i]))    
-    f.write("-"*20+"\n") 
-    for i in range(len(aupr_asd)):
-        f.write("ASD AUPR:%f\n" % (aupr_asd[i]))    
-    f.write("-"*20+"\n") 
-    for i in range(len(aucs_id)):
-        f.write("ID AUC:%f\n" % (aucs_id[i]))    
-    f.write("-"*20+"\n") 
-    for i in range(len(aupr_id)):
-        f.write("ID AUPR:%f\n" % (aupr_id[i]))
-    f.write("-"*20+"\n")
-    for i in range(len(epoch_count)):
-        f.write("ID AUPR:%f\n" % (epoch_count[i]))    
-    
-    f.close()
-    print("Generated DeepND results for Exp: ", experiment)
-    print("Done in ", t , "hh:mm:ss." )
-    
-    model = model.eval()
-    out1,out2 = model(features, featuresasd, featuresid, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
-    # ASD
-    _, pred1 = out1.max(dim=1)
-    nb_classes = 2
-    confusion_matrix_asd = torch.zeros(nb_classes, nb_classes,dtype=torch.long)
-    with torch.no_grad():
-        _, preds = torch.max(out1, 1)
-        for t, p in zip(data_asd.y1[data_asd.auc_mask].view(-1), preds[data_asd.auc_mask].view(-1)):
-            confusion_matrix_asd[t.long(), p.long()] += 1
-    print("ASD:\n",confusion_matrix_asd)
-    print(preds.sum().item(), " Many nodes are labeled as ID Genes")
-    print(F.softmax(out1, dim = 1)[:,1])
-    
-    # ID
-    _, pred2 = out2.max(dim=1)
-    confusion_matrix_id = torch.zeros(nb_classes, nb_classes,dtype=torch.long)
-    with torch.no_grad():
-        _, preds = torch.max(out2, 1)
-        for t, p in zip(data_id.y2[data_id.auc_mask].view(-1), preds[data_id.auc_mask].view(-1)):
-            confusion_matrix_id[t.long(), p.long()] += 1
-    print("ID:\n",confusion_matrix_id)
-    print(preds.sum().item(), " Many nodes are labeled as ID Genes")
-    print(F.softmax(out2, dim = 1)[:,1])
     ###############################################################################################################################################
     """HEATMAPS"""
     ###############################################################################################################################################

@@ -20,7 +20,7 @@ from scipy.stats import mannwhitneyu
 from models  import *
 from utils import *
 
-def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state,experiment):
+def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment):
     network_count = len(pfcgpumask)
     geneNames_all = pd.read_csv(root + "Data/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
@@ -247,8 +247,8 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                 
                 # ------------------------------------------------------------- 
         print("-"*10)
-        print(diseasename+" Trial Mean AUC:" + str(np.mean(aucs[-20:])))
-        print(diseasename+" Trial Mean AUPR:" + str(np.mean(aupr[-20:])))    
+        print(diseasename+" Trial Median AUC:" + str(np.median(aucs[-(k*k-1):])))
+        print(diseasename+" Trial Median AUPR:" + str(np.median(aupr[-(k*k-1):])))    
         print("-"*10)
         print(diseasename+" Current Median AUC:" + str(np.median(aucs)))
         print(diseasename+" Current Median AUPR:" + str(np.median(aupr)))    
@@ -256,8 +256,8 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
         print("-"*80)
     ###############################################################################################################################################    
     # Writing Final Result of the Session
-    writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, root, diseasename= diseasename, trial = trial, k = k)
-    riteExperimentSatats( aucs, aupr, root = root, diseasename=diseasename, trial = trial, k = k, init_time =init_time, network_count =network_count , mode = mode)
+    writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, path = path, diseasename = diseasename, trial = trial, k = k)
+    writeExperimentStats( aucs, aupr, path = path, diseasename = diseasename, trial = trial, k = k, init_time = init_time, network_count = network_count , mode = mode)
     
     # HEATMAPS
     heatmap = torch.zeros(4, network_count,dtype=torch.float)

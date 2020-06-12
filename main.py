@@ -14,26 +14,29 @@ import pickle
 import numpy as np
 import pandas as pd
 import os 
-os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3,4,5,6,7"
+os.environ["CUDA_VISIBLE_DEVICES"]= "0"
 
-root = ""
-trial = 10
-k = 5
-mode = 0
-model_select = 0
+root = "" # Current directory
+trial = 1 # Number of trials to train, Default : 10
+k = 1 # k-fold cross validation, Default : 5
+mode = 0 # 1 : Test, 0: Train | Default : 0
+model_select = 0 # 1 : Multi, 0: Single | Default : 1
 disease = 0
+networks = [11] # Regions to be fed to the model, example is set for region 11 (emporal window 12-14)
 
-pfcgpumask = [0] #,0,0,0,0,0,0,0,0,0,0,0,0]
-mdcbcgpumask = [0]#,1,1,1,1,2,2,2,3,3,3,3,3]
-v1cgpumask = [0]#4,4,4,4,5,5,5,5,5,5,5,5]
-shagpumask = [0]#5,6,6,6,6,6,6,6,6,6,6,6]
+# GPU Mask Setup
+pfcgpumask = [0]
+mdcbcgpumask = [0]
+v1cgpumask = [0]
+shagpumask = [0]
 
+# GPU Device Setup
 devices = []
 for i in range(torch.cuda.device_count()):
     devices.append(torch.device('cuda:' + str(i)))
     
 print("CUDA Device Count:",torch.cuda.device_count())
-    
+maskCheck([pfcgpumask,mdcbcgpumask,v1cgpumask,shagpumask,networks])    
 if model_select:
     diseasename = "Multi"
 else:
@@ -42,8 +45,7 @@ else:
     else:
         diseasename = "ASD"
 
-access_rights = 0o755
-       
+access_rights = 0o755       
 if mode:
     experiment = 0
     if experiment < 10:
@@ -83,13 +85,10 @@ if model_select:
     featsizeid = 13 
     featsizeasd = 17
     featsize = 29 
-    lrasd = 0.0007
-    lrid = 0.007
-    lrc = 0.0007
+    l_rate = [0.0007, 0.0007, 0.777] # lrc = 0.0007 | lrasd = 0.0007 | lrid = 0.007
     wd = 0.0001
     diseasename = "Multi"
-    model = DeepND()
-    # deepnd()
+    deepnd(root, path, input_size, mode,  l_rate, wd, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
 else:
     if disease:
         input_size = 13
@@ -99,5 +98,4 @@ else:
         input_size = 17
         l_rate = 0.0007 
         diseasename = "ASD"
-    #model = DeepND_ST(featsize=input_size)
-    deepnd_st( root, path, input_size, mode,  l_rate, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment)
+    deepnd_st( root, path, input_size, mode,  l_rate, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
