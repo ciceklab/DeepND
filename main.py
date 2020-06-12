@@ -7,6 +7,7 @@ Ankara, 2020
 from models import *
 from utils import *
 from deepnd_st import *
+from deepnd import *
 import torch
 
 import sys
@@ -18,9 +19,9 @@ os.environ["CUDA_VISIBLE_DEVICES"]= "0"
 
 root = "" # Current directory
 trial = 1 # Number of trials to train, Default : 10
-k = 1 # k-fold cross validation, Default : 5
+k = 3 # k-fold cross validation, Default : 5
 mode = 0 # 1 : Test, 0: Train | Default : 0
-model_select = 0 # 1 : Multi, 0: Single | Default : 1
+model_select = 1 # 1 : Multi, 0: Single | Default : 1
 disease = 0
 networks = [11] # Regions to be fed to the model, example is set for region 11 (emporal window 12-14)
 
@@ -82,9 +83,7 @@ else:
         pickle.dump(state, f)
         
 if model_select:
-    featsizeid = 13 
-    featsizeasd = 17
-    featsize = 29 
+    input_size = [29, 17, 13] # featsize = 29 | featsizeasd = 17 | featsizeid = 13 
     l_rate = [0.0007, 0.0007, 0.777] # lrc = 0.0007 | lrasd = 0.0007 | lrid = 0.007
     wd = 0.0001
     diseasename = "Multi"
@@ -98,4 +97,4 @@ else:
         input_size = 17
         l_rate = 0.0007 
         diseasename = "ASD"
-    deepnd_st( root, path, input_size, mode,  l_rate, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
+    deepnd_st( root, path, input_size, mode, l_rate, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)

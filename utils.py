@@ -15,6 +15,7 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
 import csv
 import math
+import time
 
 def memoryUpdate(usage = 0, cached = 0):
     # Memory Update!
@@ -202,7 +203,7 @@ def load_goldstandards(root,  geneNames_all, geneDict, diseasename = "ASD"):
     pos_neg_intersect, pos_indices, not_found_indices , neg_indices = intersect_lists(pgold_tada_intersect , ngold_tada_intersect, geneDict)
     print("Positive and Negative Gold Standard Gene Intersection List:", pos_neg_intersect)
     print("Positive and Negative Gold Standard Gene Intersection List Length:", len(pos_neg_intersect))
-    return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_evidence, gold_evidence
+    return  g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_genes, neg_gold_std_genes, pos_gold_std_evidence, gold_evidence
 
 def create_validation_set(g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k, state):                                 
     # k for k-fold cross validation
@@ -260,10 +261,10 @@ def loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD"):
         features.append(feature.to(devices[i]))
     return data, features
 
-def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, path = "", diseasename="ASD", trial = 10, k = 5):
+def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, pos_gold_std_genes, neg_gold_std_genes, geneDict, geneNames_all, path = "", diseasename="ASD", trial = 10, k = 5):
     predictions /= float(trial*k*(k-1))
     predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
-    fpred = open( path + "/predict_" + lower(diseasename) +".txt","w+")
+    fpred = open( path + "/predict_" + diseasename.lower() +".txt","w+")
     fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
     for index,row in enumerate(predictions):
         if str(geneNames_all[index]) in geneDict:

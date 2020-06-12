@@ -17,12 +17,13 @@ from torch_geometric.data import Data
 from torch.autograd import Variable
 from sklearn.metrics import average_precision_score, roc_auc_score
 from scipy.stats import mannwhitneyu
-
+import time
 from models  import *
 from utils import *
 
 def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks):
     network_count = len(networks)
+    init_time = time.time()
     geneNames_all = pd.read_csv(root + "Data/row-genes.txt", header = None)
     geneNames_all = geneNames_all[0].tolist()
     geneDict = constructGeneDictionary(root + "Data/hugogenes_entrez.txt")
@@ -31,8 +32,8 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
     # GOLD STANDARDS
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
-    g_bs_tada_intersect_indices_asd, n_bs_tada_intersect_indices_asd, y1, pos_gold_std_evidence_asd, gold_evidence_asd = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ASD")
-    g_bs_tada_intersect_indices_id, n_bs_tada_intersect_indices_id, y2, pos_gold_std_evidence_id, gold_evidence_id = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ID")
+    g_bs_tada_intersect_indices_asd, n_bs_tada_intersect_indices_asd, y1, pos_gold_std_genes_asd, neg_gold_std_genes_asd, pos_gold_std_evidence_asd, gold_evidence_asd = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ASD")
+    g_bs_tada_intersect_indices_id, n_bs_tada_intersect_indices_id, y2, pos_gold_std_genes_id, neg_gold_std_genes_id, pos_gold_std_evidence_id, gold_evidence_id = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ID")
 
     asd_e1_gene_indices, asd_e1_perm, asd_e2_gene_indices, asd_e2_perm, asd_e3e4_gene_indices, asd_e3e4_perm, asd_neg_perm, asd_counts = create_validation_set( g_bs_tada_intersect_indices_asd, n_bs_tada_intersect_indices_asd, gold_evidence_asd, k = 5, state = state)
     id_e1_gene_indices, id_e1_perm, id_e2_gene_indices, id_e2_perm, id_e3e4_gene_indices, id_e3e4_perm, id_neg_perm, id_counts = create_validation_set( g_bs_tada_intersect_indices_id, n_bs_tada_intersect_indices_id, gold_evidence_id, k = 5, state = state)
@@ -53,7 +54,7 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
     pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, mask = networks) 
     
     # MODEL CONSTRUCTION
-    model = DeepND_ST(devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize=input_size, unit=input_size)
+    model = DeepND(devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize=input_size,  root = root, experiment = experiment)
     
     #ASD
     average_attasd = []
@@ -257,7 +258,7 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
                     ASDFit = False
                     IDFit = False
                 
-                    for epoch in range(max_epoch):
+                    for epoch in range(1000):
                         model = model.train()
                         optimizerc.zero_grad()
                         optimizerasd.zero_grad()
@@ -446,10 +447,10 @@ def deepnd(root, path, input_size, mode, l_rate, wd, trial, k, diseasename , dev
     ###############################################################################################################################################
     
     #ASD final Predictions
-    writePrediction(predictions_asd, g_bs_tada_intersect_indices_asd, n_bs_tada_intersect_indices_asd,  path = path, diseasename="ASD", trial = trial, k = k
+    writePrediction(predictions_asd, g_bs_tada_intersect_indices_asd, n_bs_tada_intersect_indices_asd, pos_gold_std_genes_asd, neg_gold_std_genes_asd, geneDict, geneNames_all, path = path, diseasename="ASD", trial = trial, k = k)
     
     #ID final Predictions
-    writePrediction(predictions_id, g_bs_tada_intersect_indices_id, n_bs_tada_intersect_indices_id,  path = path, diseasename="ID", trial = trial, k = k)
+    writePrediction(predictions_id, g_bs_tada_intersect_indices_id, n_bs_tada_intersect_indices_id, pos_gold_std_genes_id, neg_gold_std_genes_id, geneDict, geneNames_all, path = path, diseasename="ID", trial = trial, k = k)
     
     #Experiment Stats
     writeExperimentStats( [aucs_asd, aucs_id], [aupr_asd, aupr_id], path = path , diseasename="Multi", trial = trial, k = k, init_time = init_time, network_count = network_count, mode = mode)

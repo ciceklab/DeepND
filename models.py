@@ -132,20 +132,20 @@ class DeepND_ST(torch.nn.Module): # Single Task DeepND
         
         
 class DeepND(torch.nn.Module): # Multi Task DeepND
-    def __init__(self):
+    def __init__(self, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize = [29, 17, 13], unit=15, genesize = 25825, root ="", experiment="00" ):
         super(DeepND, self).__init__()
-        self.unit = 15
-        torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
-        self.commonmlp = nn.Linear(featsize, self.unit).to(devices[0])
-        torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
-        self.ASDBranch= DeepND_ST(featsize=featsizeasd)  
-        torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
-        self.IDBranch= DeepND_ST(featsize=featsizeid)        
+        self.unit = unit
+        torch.set_rng_state(torch.load(root + "MultiExp" + str(experiment) + "/deepND_experiment_torch_random_state"))
+        self.commonmlp = nn.Linear(featsize[0], self.unit).to(devices[0])
+        torch.set_rng_state(torch.load(root + "MultiExp" + str(experiment) + "/deepND_experiment_torch_random_state"))
+        self.ASDBranch= DeepND_ST(devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize[1], self.unit)  
+        torch.set_rng_state(torch.load(root + "MultiExp" + str(experiment) + "/deepND_experiment_torch_random_state"))
+        self.IDBranch= DeepND_ST(devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, featsize[2], self.unit)        
       
     # data contains a packed structure: Features and first graph's edge indices
     # Currentlt, network is configured to work on a single graph.
     #To enable multiple graphs, uncomment correspoding convolution layers in addition to MLP layer at the end
-    def forward(self, features, asdfeatures, idfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights):
+    def forward(self, features, asdfeatures, idfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask):
         
         flat = self.commonmlp(features)
         flat = F.leaky_relu(flat, negative_slope=1.5)
@@ -153,7 +153,7 @@ class DeepND(torch.nn.Module): # Multi Task DeepND
         for i in range(len(devices)):
             flatten.append(flat.to(devices[i]))
                 
-        final1 = self.ASDBranch(flatten, asdfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
-        final2 = self.IDBranch(flatten, idfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights)
+        final1 = self.ASDBranch(flatten, asdfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
+        final2 = self.IDBranch(flatten, idfeatures, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
 
         return final1, final2
