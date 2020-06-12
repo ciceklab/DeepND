@@ -29,8 +29,8 @@ pillow<br/>
 
 ## Install
 
-In order to install required packages, either one of following methods can be used. 
-<b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate.
+In order to install required packages, either one of following methods can be used. <br/>
+<b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate.<br/>
 <b>General Installation:</b> Install all packages listed under "Software Requirements : Dependencies" section with their given versions. 
 
 ## Usage
