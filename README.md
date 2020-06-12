@@ -1,6 +1,18 @@
 # DeepND
 DeepND ASD &amp; ID 
 
+## Contents
+- Overview
+- Repo Contents
+- System Requirements
+- Installation Guide
+- Demo
+
+## Overview
+
+## Repository Contents
+- Data : Feature sets, gold standards and example networks
+
 ## System Requirements
 ### Hardware Requirements
 
@@ -30,7 +42,7 @@ seaborn<br/>
 scikit-learn<br/>
 pillow<br/>
 
-## Install
+## Installation Guide
 
 In order to install required packages, either one of following methods can be used. <br/>
 <b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate.<br/>
