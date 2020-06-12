@@ -26,3 +26,7 @@ pandas<br/>
 seaborn<br/>
 scikit-learn<br/>
 pillow<br/>
+
+## Install
+
+After downloading all files, unwrap the conda enviroment named "deepnd-legacy.yml" and activate.
