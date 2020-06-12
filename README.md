@@ -46,6 +46,6 @@ The model parameters are listed in "main.py".
 - networks : List that contains spatio-temporal regions to be fed to the model. The example is given for region 11 (temporal window 12-14), to run the example : [11] | Default (all regions) : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] |<br/>
 
 After setting the paramters listed above, you can run the program using the following command in working directory:
-
-"python main.py"
-
+```
+python main.py
+```
