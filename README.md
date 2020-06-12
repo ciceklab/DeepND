@@ -72,3 +72,19 @@ python main.py
 ```
 
 ## Demo
+
+For demo use the configuration below for "main.py". 
+```
+root = ""
+trial = 10
+k = 5
+mode = 0
+experiment = 0
+model_select = 1
+disease = 0
+networks = [11] 
+pfcgpumask = [0]
+mdcbcgpumask = [0]
+v1cgpumask = [0]
+shagpumask = [0]
+```
