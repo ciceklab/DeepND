@@ -21,9 +21,11 @@ root = "" # Current directory
 trial = 10 # Number of trials to train | Default : 10
 k = 5 # k-fold cross validation | Default : 5
 mode = 0 # 1 : Test, 0: Train | Default : 0
+experiment = 0 # Experiment ID
 model_select = 1 # 1 : Multi, 0: Single | Default : 1
 disease = 0 # Required for Single Task Mode, 0 : ASD, 1 : ID | Default : 0
 networks = [11] # List that contains regions to be fed to the model, example is set for region 11 (temporal window 12-14) | Default (all regions) : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+
 
 # GPU Mask Setup
 # GPU mask MUST have the same length as networks!
@@ -46,13 +48,13 @@ else:
         diseasename = "ID"
     else:
         diseasename = "ASD"
-
+        
+if experiment < 10:
+    experiment = "0" + str(experiment)
+        
 access_rights = 0o755  # User :RWX | Group : RX | Others : RX    
 if mode:
     # Test Mode Directory Setup
-    experiment = 0
-    if experiment < 10:
-        experiment = "0" + str(experiment)
     print("Generating results for ", diseasename , " Exp :", experiment)
     path = root + diseasename + "Exp" + str(experiment) + "Test"
     try:
