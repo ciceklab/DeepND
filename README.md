@@ -25,8 +25,8 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 
 ## Questions & Comments 
 
-[firstauthorname].[firstauthorsurname]@bilkent.edu.tr or <br>
-[secondauthorname].[secondauthorsurname]@bilkent.edu.tr
+[firstauthorname].[firstauthorlastname]@bilkent.edu.tr or <br>
+[secondauthorfirstinitial].[secondauthorlastname]@bilkent.edu.tr
 
 ## Repository Contents
 - Data : Feature sets, gold standards and example networks
