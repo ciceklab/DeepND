@@ -89,7 +89,7 @@ python main.py
 
 A quick demo for DeepND is included for autism spectrum disorder (ASD) and intelectual disabilty(ID). Required inputs, such as spatio-temporal brain co-expression netwroks, gene features and gold standards are provided in the "Data" folder. 
 
-After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
 
 ```
 root = ""
@@ -104,4 +104,9 @@ pfcgpumask = [0]
 mdcbcgpumask = [0]
 v1cgpumask = [0]
 shagpumask = [0]
+```
+
+2. Run the following terminal command:
+```
+python main.py
 ```
