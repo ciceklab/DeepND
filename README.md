@@ -208,4 +208,7 @@ python main.py
     - Prediction results for the specified disorder (ASD) as a .txt file
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
     - heatmaps that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
-  
+
+## License
+- CC BY-NC-SA 2.0
+- For commercial usage, please contact.
