@@ -89,6 +89,8 @@ python main.py
 
 A quick demo for DeepND is included for autism spectrum disorder (ASD) and intelectual disabilty(ID). Required inputs, such as spatio-temporal brain co-expression netwroks, gene features and gold standards are provided in the "Data" folder. 
 
+### DeepND Train Mode
+
 1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
 
 ```
@@ -110,3 +112,100 @@ shagpumask = [0]
 ```
 python main.py
 ```
+
+3. The output will be written to MultiExp00 folder which contains:
+  - Saved models for each training as ".pth" files
+  - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
+  - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
+  - heatmaps that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+  - pyTorch and Numpy random states for reproducing the same results in test mode
+  
+### DeepND Test Mode
+
+1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+
+```
+root = ""
+trial = 10
+k = 5
+mode = 1
+experiment = 0
+model_select = 1
+disorder = 0
+networks = [11] 
+pfcgpumask = [0]
+mdcbcgpumask = [0]
+v1cgpumask = [0]
+shagpumask = [0]
+```
+
+2. Run the following terminal command:
+```
+python main.py
+```
+
+3. The program will read the saved models and random states from MultiExp00 and the output will be written to MultiExp00Test folder which contains:
+  - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
+  - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
+  - heatmaps that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+  
+### DeepND-ST Train Mode
+
+1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+
+```
+root = ""
+trial = 10
+k = 5
+mode = 0
+experiment = 0
+model_select = 0
+disorder = 0
+networks = [11] 
+pfcgpumask = [0]
+mdcbcgpumask = [0]
+v1cgpumask = [0]
+shagpumask = [0]
+```
+
+2. Run the following terminal command:
+```
+python main.py
+```
+
+3. The output will be written to ASDExp00 folder which contains:
+  - Saved models for each training as ".pth" files
+  - Prediction results for the specified disorder as a .txt file
+  - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
+  - heatmaps that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+  - pyTorch and Numpy random states for reproducing the same results in test mode
+  
+### DeepND-ST Test Mode
+
+1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+
+```
+root = ""
+trial = 10
+k = 5
+mode = 1
+experiment = 0
+model_select = 0
+disorder = 0
+networks = [11] 
+pfcgpumask = [0]
+mdcbcgpumask = [0]
+v1cgpumask = [0]
+shagpumask = [0]
+```
+
+2. Run the following terminal command:
+```
+python main.py
+```
+
+3. The program will read the saved models and random states from ASDExp00 and the output will be written to ASDExp00Test folder which contains:
+  - Prediction results for the specified disorder (ASD) as a .txt file
+  - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
+  - heatmaps that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+  
