@@ -23,7 +23,7 @@ DeepND is a deep neural network model developed to provide such functionalities 
 ### Hardware Requirements
 
 <b>GPU:</b><br/>
-- For all spatio temporal regions : 7 NVIDIA GeForce GTX 1080 or equivalent configurations with at least 70GB of memory;  Recommended: 3 NVIDIA Titan RTx<br/>
+- For all spatio temporal regions : 7 NVIDIA GeForce GTX 1080 Ti or equivalent configurations with at least 70GB of memory;  Recommended: 3 NVIDIA TITAN RTX<br/>
 - For the Example included in this repository : 1 NVIDIA GeForce GTX 1080 or equivalent configurations<br/>
 
 <b>Disk Storage:</b> 25 GB of free disk space
