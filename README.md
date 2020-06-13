@@ -10,10 +10,9 @@ DeepND ASD &amp; ID
 
 ## Overview
 
-Autism Spectrum Disorder (ASD) is a heterogeneous  neurodevelopmental disorder associated with social and communication difficulties, self-stimulatory and repetitive behaviors, and arrow or overly-focused interests. Evidence from recent studies suggests that genetic architectures of neuropsychiatric disorders overlap. Intellectual Disability (ID) is one of such comorbid disorders characterized by significant limitations both in intellectual functioning (reasoning, learning, problem solving) and in adaptive behavior, which covers a range of everyday social and practical skills. A common way of finding risk genes for both disorders is to run a model twice for each disorder and then intersect the results, which fails to capture the common signal between two disorders. Using such a technique fails to utilize the comorbidity of these disorders, that is a signal coming from ASD dataset is informative for ID as well, and vice-versa.</br>
+DeepND is a cross-disorder gene discovery algorithm (Deep Neurodevelopmenal Disorders algorithm - \textit{DeepND}.) DeepND analyzes comorbid neurodevelopmental disorders simultaneously and explicitly learns the shared and disorder-specific genetic features using multitask learning. Thus, the predictions for the disorders depend on each other's genetic architecture. The proposed DeepND architecture uses graph convolution to extract associations between genes from gene coexpression networks that model neurodevelopment. This information is processed by a mixture-of-experts model that can self-learn critical neurodevelopmental time windows and brain regions for each disorder etiology which makes the model interpretable. We provide a genomewide risk ranking for each disorder.
 
-DeepND is a deep neural network model developed to provide such functionalities for analyzing isolated and common genetic signals of ASD and ID. In this package, we provide feature sets, gold standards and example spatio-temporal brain coexpression networks with training and test processes of DeepND, both for single task and multi task modes. 
-
+The model can easily be extended to work with more than 2 comorbid disorders or other types of gene interaction networks.
 
 ## Repository Contents
 - Data : Feature sets, gold standards and example networks
