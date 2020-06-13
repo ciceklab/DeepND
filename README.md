@@ -211,7 +211,7 @@ python main.py
 
 ### Reproducing the results given in the manuscript
 
-**Warning:** Make sure your computational unit satifies the hardware requirements for full experiment which is listed under Requirments section.
+**Warning:** Make sure your computational unit satifies the hardware requirements for full experiment which is listed under [Requirments](https://pages.github.com/).
 
 1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". Note that `pfcgpumask`, `mdcbcgpumask`, `v1cgpumask` and `shagpumask` are GPU mappings for temporal networks of those regions and they depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc. The setup given below is for 7 NVIDIA GeForce GTX 1080 Ti and you may need to adjust it manually for your own setup.
 
