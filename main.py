@@ -23,7 +23,7 @@ k = 5 # k-fold cross validation | Default : 5
 mode = 0 # 1 : Test, 0: Train | Default : 0
 experiment = 0 # Experiment ID
 model_select = 1 # 1 : Multi, 0: Single | Default : 1
-disease = 0 # Required for Single Task Mode, 0 : ASD, 1 : ID | Default : 0
+disorder = 0 # Required for Single Task Mode, 0 : ASD, 1 : ID | Default : 0
 networks = [11] # List that contains regions to be fed to the model, example is set for region 11 (temporal window 12-14) | Default (all regions) : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
 
@@ -42,12 +42,12 @@ for i in range(torch.cuda.device_count()):
 print("CUDA Device Count:",torch.cuda.device_count())
 maskCheck([pfcgpumask,mdcbcgpumask,v1cgpumask,shagpumask,networks])    
 if model_select:
-    diseasename = "Multi"
+    disordername = "Multi"
 else:
     if disease:
-        diseasename = "ID"
+        disordername = "ID"
     else:
-        diseasename = "ASD"
+        disordername = "ASD"
         
 if experiment < 10:
     experiment = "0" + str(experiment)
@@ -55,8 +55,8 @@ if experiment < 10:
 access_rights = 0o755  # User :RWX | Group : RX | Others : RX    
 if mode:
     # Test Mode Directory Setup
-    print("Generating results for ", diseasename , " Exp :", experiment)
-    path = root + diseasename + "Exp" + str(experiment) + "Test"
+    print("Generating results for ", disordername , " Exp :", experiment)
+    path = root + disordername + "Exp" + str(experiment) + "Test"
     try:
         os.mkdir(path, access_rights)
     except OSError:
@@ -64,9 +64,9 @@ if mode:
     else:
         print ("Successfully created the test directory.")
     # Load random states for reproducing test results
-    torch.set_rng_state(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
+    torch.set_rng_state(torch.load(root + disordername + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state"))
     state = np.random.get_state()
-    with open(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'rb') as f:
+    with open(root + disordername + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'rb') as f:
         state = pickle.load(f)
     np.random.set_state(state)
 else:
@@ -74,8 +74,8 @@ else:
     experiment = 0
     if experiment < 10:
         experiment = "0" + str(experiment)
-    print("Training ", diseasename , " for Exp :", experiment)
-    path = root + diseasename + "Exp" + str(experiment)
+    print("Training ", disordername , " for Exp :", experiment)
+    path = root + disordername + "Exp" + str(experiment)
     try:
         os.mkdir(path, access_rights)
     except OSError:
@@ -83,9 +83,9 @@ else:
     else:
         print ("Successfully created the directory for the results.")
     # Save random states for reproducing test results in future
-    torch.save(torch.get_rng_state(),root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state")
+    torch.save(torch.get_rng_state(),root + disordername + "Exp" + str(experiment) + "/deepND_experiment_torch_random_state")
     state = np.random.get_state()
-    with open(root + diseasename + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'wb') as f:
+    with open(root + disordername + "Exp" + str(experiment) + "/deepND_experiment_numpy_random_state", 'wb') as f:
         pickle.dump(state, f)
         
 if model_select:
@@ -93,8 +93,8 @@ if model_select:
     input_size = [29, 17, 13] # featsize = 29 | featsizeasd = 17 | featsizeid = 13 
     l_rate = [0.0007, 0.0007, 0.777] # lrc = 0.0007 | lrasd = 0.0007 | lrid = 0.007
     wd = 0.0001
-    diseasename = "Multi"
-    deepnd(root, path, input_size, mode,  l_rate, wd, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
+    disordername = "Multi"
+    deepnd(root, path, input_size, mode,  l_rate, wd, trial, k, disordername, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
 else:
     # Single Task Model
     if disease:
@@ -105,4 +105,4 @@ else:
         input_size = 17
         l_rate = 0.0007 
         diseasename = "ASD"
-    deepnd_st( root, path, input_size, mode, l_rate, trial, k, diseasename, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
+    deepnd_st( root, path, input_size, mode, l_rate, trial, k, disordername, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
