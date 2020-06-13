@@ -1,5 +1,4 @@
-# DeepND
-DeepND ASD &amp; ID 
+# DeepND - Deep Neurodevelopmenal Disorders algorithm
 
 ## Contents
 - Overview
