@@ -1,10 +1,11 @@
 # DeepND 
 ## Contents
-- Overview
+- [Overview](https://github.com/ciceklab/DeepND#overview)
 - Repo Contents
-- System Requirements
-- Installation Guide
-- Demo
+- [System Requirements](https://github.com/ciceklab/DeepND#system-requirments)
+- [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide)
+- [Demo](https://github.com/ciceklab/DeepND#demo)
+- [License](https://github.com/ciceklab/DeepND#license)
 
 ## Overview
 
