@@ -32,7 +32,7 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 
 <b>GPU:</b><br/>
 - For all spatio temporal regions : 7 NVIDIA GeForce GTX 1080 Ti or equivalent configurations with at least 70GB of memory;  Recommended: 3 NVIDIA TITAN RTX<br/>
-- For the Example included in this repository : 1 NVIDIA GeForce GTX 1080 or equivalent configurations<br/>
+- For the Example included in this repository : 1 NVIDIA GeForce GTX 1080 Ti or equivalent configurations<br/>
 
 <b>Disk Storage:</b> 25 GB of free disk space
 
@@ -60,6 +60,12 @@ pillow<br/>
 
 In order to install required packages, either one of following methods can be used. <br/>
 <b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate.<br/>
+
+```
+$ conda env create -f deepnd-legacy.yml
+$ conda activate deepnd-legacy
+```
+
 <b>General Installation:</b> Install all packages listed under "Software Requirements : Dependencies" section with their given versions. 
 
 ## Usage
