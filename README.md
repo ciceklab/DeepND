@@ -66,7 +66,7 @@ $ conda env create -f deepnd-legacy.yml
 $ conda activate deepnd-legacy
 ```
 
-<b>General Installation:</b> Install all packages listed under [Software Requirements-Dependencies](https://github.com/ciceklab/DeepND#software-requirements) section with their given versions. 
+<b>General Installation:</b> Install all packages listed under [Software Requirements-Dependencies](https://github.com/ciceklab/DeepND#software-requirments) section with their given versions. 
 
 ## Usage
 
