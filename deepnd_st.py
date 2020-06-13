@@ -19,7 +19,7 @@ import time
 from models  import *
 from utils import *
 
-def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks):
+def deepnd_st(root, path, input_size, mode, l_rate, trial, k, disordername , devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks):
     init_time = time.time()
     network_count = len(networks)
     geneNames_all = pd.read_csv(root + "Data/row-genes.txt", header = None)
@@ -31,21 +31,21 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
     
-    if diseasename == "ID":
+    if disordername == "ID":
         # ID Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_genes, neg_gold_std_genes, pos_gold_std_evidence, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ID")
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_genes, neg_gold_std_genes, pos_gold_std_evidence, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, disordername = "ID")
     else:
         # ASD Validation
-        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_genes, neg_gold_std_genes, pos_gold_std_evidence, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, diseasename = "ASD")
+        g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, y, pos_gold_std_genes, neg_gold_std_genes, pos_gold_std_evidence, gold_evidence = load_goldstandards(root, geneNames_all, geneDict, disordername = "ASD")
 
     # VALIDATION SETS
     e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts = create_validation_set( g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, gold_evidence, k = 5, state = state)
     
     # FEATURES
     if diseasename == "ID":
-        data, features = loadFeatures(root, y, geneNames_all, devices, diseasename = "ID")
+        data, features = loadFeatures(root, y, geneNames_all, devices, disordername = "ID")
     else:
-        data, features = loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD")
+        data, features = loadFeatures(root, y, geneNames_all, devices, disordername = "ASD")
         
     # NETWORKS
     pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights = load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, mask = networks) 
@@ -156,7 +156,7 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                 data.validation_mask = torch.tensor(validation_mask, dtype=torch.long)
                 if mode:
                     #Test Mode
-                    model.load_state_dict(torch.load(root + diseasename + "Exp" + str(experiment) + "/deepND_ST_"+diseasename+"_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
+                    model.load_state_dict(torch.load(root + disordername + "Exp" + str(experiment) + "/deepND_ST_" + disordername + "_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth"))
                     model = model.eval()
                     with torch.no_grad():
                         out = model(features, features, pfcnetworks, mdcbcnetworks, v1cnetworks, shanetworks, pfcnetworkweights, mdcbcnetworkweights, v1cnetworkweights, shanetworkweights, devices, pfcgpumask, mdcbcgpumask, v1cgpumask, shagpumask)
@@ -207,7 +207,7 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                                     print("Epoch:", epoch, ", Loss:",loss.mean().item())
                                     break
             
-                    torch.save(model.state_dict(), path + "/deepND_ST_"+diseasename+"_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth") 
+                    torch.save(model.state_dict(), path + "/deepND_ST_" + disordername + "_trial"+str(j+1)+"_fold"+str(k1+1)+"_"+str(k2+1)+".pth") 
                 # -------------------------------------------------------------
                 adjusted_mean_scores = (torch.exp(out.cpu()))[:,1]
                 adjusted_mean_scores[data.train_mask] = 0.0
@@ -243,17 +243,17 @@ def deepnd_st(root, path, input_size, mode, l_rate, trial, k, diseasename , devi
                 
                 # ------------------------------------------------------------- 
         print("-"*10)
-        print(diseasename+" Trial Median AUC:" + str(np.median(aucs[-int((k*k-1)):])))
-        print(diseasename+" Trial Median AUPR:" + str(np.median(aupr[-(k*k-1):])))    
+        print(disordername+" Trial Median AUC:" + str(np.median(aucs[-int((k*k-1)):])))
+        print(disordername+" Trial Median AUPR:" + str(np.median(aupr[-(k*k-1):])))    
         print("-"*10)
-        print(diseasename+" Current Median AUC:" + str(np.median(aucs)))
-        print(diseasename+" Current Median AUPR:" + str(np.median(aupr)))    
+        print(disordername+" Current Median AUC:" + str(np.median(aucs)))
+        print(disordername+" Current Median AUPR:" + str(np.median(aupr)))    
     
         print("-"*80)
     ###############################################################################################################################################    
     # Writing Final Result of the Session
-    writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, pos_gold_std_genes, neg_gold_std_genes, geneDict, geneNames_all, path = path, diseasename = diseasename, trial = trial, k = k)
-    writeExperimentStats( aucs, aupr, path = path, diseasename = diseasename, trial = trial, k = k, init_time = init_time, network_count = network_count , mode = mode)
+    writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, pos_gold_std_genes, neg_gold_std_genes, geneDict, geneNames_all, path = path, disordername = disordername, trial = trial, k = k)
+    writeExperimentStats( aucs, aupr, path = path, disordername = disordername, trial = trial, k = k, init_time = init_time, network_count = network_count , mode = mode)
     
     # HEATMAPS
     heatmap = torch.zeros(4, network_count,dtype=torch.float)
