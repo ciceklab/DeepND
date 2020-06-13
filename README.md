@@ -66,7 +66,7 @@ $ conda env create -f deepnd-legacy.yml
 $ conda activate deepnd-legacy
 ```
 
-<b>General Installation:</b> Install all packages listed under "Software Requirements : Dependencies" section with their given versions. 
+<b>General Installation:</b> Install all packages listed under [Software Requirements-Dependencies](https://github.com/ciceklab/DeepND#software-requirements) section with their given versions. 
 
 ## Usage
 
@@ -91,7 +91,7 @@ A quick demo for DeepND is included for autism spectrum disorder (ASD) and intel
 
 ### DeepND Train Mode
 
-1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
 
 ```
 root = ""
@@ -122,7 +122,7 @@ python main.py
   
 ### DeepND Test Mode
 
-1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
 
 ```
 root = ""
@@ -151,7 +151,7 @@ python main.py
   
 ### DeepND-ST Train Mode
 
-1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
 
 ```
 root = ""
@@ -182,7 +182,7 @@ python main.py
   
 ### DeepND-ST Test Mode
 
-1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". 
+1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
 
 ```
 root = ""
@@ -211,9 +211,9 @@ python main.py
 
 ### Reproducing the results given in the manuscript
 
-**Warning:** Make sure your computational unit satifies the hardware requirements for full experiment which is listed under [Requirments](https://github.com/ciceklab/DeepND/blob/master/README.md#system-requirements).
+**Warning:** Make sure your computational unit satifies the hardware requirements for full experiment which is listed under [Requirments](https://github.com/ciceklab/DeepND#system-requirements).
 
-1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". Note that `pfcgpumask`, `mdcbcgpumask`, `v1cgpumask` and `shagpumask` are GPU mappings for temporal networks of those regions and they depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc. The setup given below is for 7 NVIDIA GeForce GTX 1080 Ti and you may need to adjust it manually for your own setup.
+1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". Note that `pfcgpumask`, `mdcbcgpumask`, `v1cgpumask` and `shagpumask` are GPU mappings for temporal networks of those regions and they depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc. The setup given below is for 7 NVIDIA GeForce GTX 1080 Ti and you may need to adjust it manually for your own setup.
 
 ```
 root = ""
