@@ -84,6 +84,7 @@ The model parameters are listed in "main.py".
 - model_select : Single Task or Multi Task model selection. For single task model the disease should be specified as either ID or ASD by setting the proper parameter. | 1 : Multi, 0: Single | Default : 1<br/>
 - disorder : The name of the subject disorder. It is required for singletask mode (DeepND-ST), can be left in default for multitask mode (DeepND)  | 0 : ASD, 1 : ID | Default : 0<br/>
 - networks : List that contains spatio-temporal regions to be fed to the model. The example is given for region 11 (temporal window 12-14), to run the example : [11] | Default (all regions) : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] |<br/>
+- pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask : GPU mappings for spatio-temporal brain co-expression networks. These mappings depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc.
 
 After setting the parameters listed above, you can run the program using the following command in working directory:
 ```
