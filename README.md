@@ -2,7 +2,7 @@
 ## Contents
 - [Overview](https://github.com/ciceklab/DeepND#overview)
     - [Authors](https://github.com/ciceklab/DeepND#authors)
-    - [Questions & Comments](https://github.com/ciceklab/DeepND#authors)
+    - [Questions & Comments](https://github.com/ciceklab/DeepND#questions--comments)
 - [Repository Contents](https://github.com/ciceklab/DeepND#repository-contents)
 - [System Requirements](https://github.com/ciceklab/DeepND#system-requirments)
 - [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide)
