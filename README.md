@@ -10,9 +10,9 @@ DeepND ASD &amp; ID
 
 ## Overview
 
-DeepND is a cross-disorder gene discovery algorithm (Deep Neurodevelopmenal Disorders algorithm - \textit{DeepND}.) DeepND analyzes comorbid neurodevelopmental disorders simultaneously and explicitly learns the shared and disorder-specific genetic features using multitask learning. Thus, the predictions for the disorders depend on each other's genetic architecture. The proposed DeepND architecture uses graph convolution to extract associations between genes from gene coexpression networks that model neurodevelopment. This information is processed by a mixture-of-experts model that can self-learn critical neurodevelopmental time windows and brain regions for each disorder etiology which makes the model interpretable. We provide a genomewide risk ranking for each disorder.
+DeepND is a cross-disorder gene discovery algorithm (Deep Neurodevelopmenal Disorders algorithm) It analyzes comorbid neurodevelopmental disorders simultaneously and explicitly learns the shared and disorder-specific genetic features using multitask learning. Thus, the predictions for the disorders depend on each other's genetic architecture. The proposed DeepND architecture uses graph convolution to extract associations between genes from gene coexpression networks that model neurodevelopment. This information is processed by a mixture-of-experts model that can self-learn critical neurodevelopmental time windows and brain regions for each disorder etiology which makes the model interpretable. We provide a genomewide risk ranking for each disorder.
 
-The model can easily be extended to work with more than 2 comorbid disorders or other types of gene interaction networks.
+The model can easily be extended to work with more than 2 comorbid disorders or with other types of gene interaction networks.
 
 ## Repository Contents
 - Data : Feature sets, gold standards and example networks
