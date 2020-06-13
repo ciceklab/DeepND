@@ -173,13 +173,13 @@ def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpuma
         
     return pfcnetworks, pfcnetworkweights, mdcbcnetworks, mdcbcnetworkweights, v1cnetworks, v1cnetworkweights, shanetworks, shanetworkweights
 
-def load_goldstandards(root,  geneNames_all, geneDict, diseasename = "ASD"):
+def load_goldstandards(root,  geneNames_all, geneDict, disordername = "ASD"):
     """GOLD STANDARDS"""
     # Following section loads gold standard genes
     # To use other standards, following section needs to be changed
     
-    pos_gold_standards = pd.read_csv(root + "Data/" + diseasename + "_Pos_Gold_Standards.csv")
-    neg_gold_standards = pd.read_csv(root + "Data/" + diseasename + "_Neg_Gold_Standards.csv")
+    pos_gold_standards = pd.read_csv(root + "Data/" + disordername + "_Pos_Gold_Standards.csv")
+    neg_gold_standards = pd.read_csv(root + "Data/" + disordername + "_Neg_Gold_Standards.csv")
     
     pos_gold_std = pos_gold_standards.values
     neg_gold_std = neg_gold_standards.values
@@ -246,8 +246,8 @@ def create_validation_set(g_bs_tada_intersect_indices, n_bs_tada_intersect_indic
     neg_perm = np.random.permutation(neg_gene_count)
     return e1_gene_indices, e1_perm, e2_gene_indices, e2_perm, e3e4_gene_indices, e3e4_perm, neg_perm, counts
 
-def loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD"):
-    features = np.load(root + "Data/" + diseasename + "_TADA_Features.npy")
+def loadFeatures(root, y, geneNames_all, devices, disordername = "ASD"):
+    features = np.load(root + "Data/" + disordername + "_TADA_Features.npy")
     features = torch.from_numpy(features).float()
     features = (features - torch.mean(features,0)) / (torch.std(features,0))
     
@@ -261,10 +261,10 @@ def loadFeatures(root, y, geneNames_all, devices, diseasename = "ASD"):
         features.append(feature.to(devices[i]))
     return data, features
 
-def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, pos_gold_std_genes, neg_gold_std_genes, geneDict, geneNames_all, path = "", diseasename="ASD", trial = 10, k = 5):
+def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersect_indices, pos_gold_std_genes, neg_gold_std_genes, geneDict, geneNames_all, path = "", disordername="ASD", trial = 10, k = 5):
     predictions /= float(trial*k*(k-1))
     predictions[g_bs_tada_intersect_indices + n_bs_tada_intersect_indices] *= float(k)
-    fpred = open( path + "/predict_" + diseasename.lower() +".txt","w+")
+    fpred = open( path + "/predict_" + disordername.lower() +".txt","w+")
     fpred.write('Probability,Gene Name,Gene ID,Positive Gold Standard,Negative Gold Standard\n')
     for index,row in enumerate(predictions):
         if str(geneNames_all[index]) in geneDict:
@@ -273,7 +273,7 @@ def writePrediction(predictions, g_bs_tada_intersect_indices, n_bs_tada_intersec
             fpred.write('%s,%s,%d,%d,%d\n' % (str(row.item()), str(geneNames_all[index]), geneNames_all[index], 1 if str(geneNames_all[index]) in pos_gold_std_genes else 0, 1 if str(geneNames_all[index]) in neg_gold_std_genes else 0 ) )
     fpred.close()
                                  
-def writeExperimentStats( aucs, aupr, path = "", diseasename="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
+def writeExperimentStats( aucs, aupr, path = "", disordername="ASD", trial = 10, k = 5, init_time = 0.0, network_count =13, mode = 0):
     
     f = open( path + "/runreport.txt","w")
     f.write("Number of networks per region: %d\n" % network_count)
@@ -281,12 +281,12 @@ def writeExperimentStats( aucs, aupr, path = "", diseasename="ASD", trial = 10, 
     if not mode:
         f.write("Generated test results, i.e. no training process.")
     f.write("\nDone in %s hh:mm:ss.\n" % timedelta( seconds = (time.time()-init_time) ) )
-    if diseasename == "Multi":
+    if disordername == "Multi":
         # Multi Task Experiment Stats
-        diseases = ["ASD", "ID"]
+        disorders = ["ASD", "ID"]
         for i in range(2):
-            f.write("Disease : %s\n" % diseases[i])
-            print("Disease :", diseases[i])
+            f.write("Disorder : %s\n" % disorders[i])
+            print("Disorder :", disorders[i])
             f.write("-"*20+"\n")
             f.write("\nMean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs[i]) )
             print(" Mean(\u03BC) AUC of All Runs:", np.mean(aucs[i]) )
@@ -303,16 +303,16 @@ def writeExperimentStats( aucs, aupr, path = "", diseasename="ASD", trial = 10, 
         for i in range(2):            
             f.write("*"*80+"\n") 
             for j in range(len(aucs[i])):
-                f.write("%s AUC:%f\n" % (diseasename, aucs[i][j]))    
+                f.write("%s AUC:%f\n" % (disordername, aucs[i][j]))    
                 f.write("-"*20+"\n") 
             for j in range(len(aupr)):
-                f.write("%s AUPR:%f\n" % (diseasename , aupr[i][j]))    
+                f.write("%s AUPR:%f\n" % (disordername , aupr[i][j]))    
             f.write("-"*20+"\n") 
         
     else: 
         # Single Task Experiment Stats
-        f.write("Disease : %s\n" % diseasename)
-        print("Disease :", diseasename)
+        f.write("Disorder : %s\n" % disordername)
+        print("Disorder :", disordername)
         f.write("-"*20+"\n")
         f.write("\nMean (\u03BC) AUC of All Runs:%f\n" % np.mean(aucs) )
         print(" Mean(\u03BC) AUC of All Runs:", np.mean(aucs) )
@@ -329,14 +329,14 @@ def writeExperimentStats( aucs, aupr, path = "", diseasename="ASD", trial = 10, 
                                     
         f.write("*"*80+"\n") 
         for i in range(len(aucs)):
-            f.write("%s AUC:%f\n" % (diseasename, aucs[i]))    
+            f.write("%s AUC:%f\n" % (disordername, aucs[i]))    
         f.write("-"*20+"\n") 
         for i in range(len(aupr)):
-            f.write("%s AUPR:%f\n" % (diseasename , aupr[i]))    
+            f.write("%s AUPR:%f\n" % (disordername , aupr[i]))    
         f.write("-"*20+"\n") 
         
     f.close()
-    print("Generated results for ", diseasename )
+    print("Generated results for ", disordername )
     print("Done in ", timedelta( seconds = (time.time()-init_time) ) , "hh:mm:ss." )
        
 
