@@ -219,7 +219,7 @@ python main.py
 
 **Warning:** Make sure your computational unit satifies the hardware requirements for full experiment which is listed under [Requirements](https://github.com/ciceklab/DeepND#system-requirements).
 
-1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". Note that `pfcgpumask`, `mdcbcgpumask`, `v1cgpumask` and `shagpumask` are GPU mappings for temporal networks of those regions and they depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc. The setup given below is for 7 NVIDIA GeForce GTX 1080 Ti and you may need to adjust it manually for your own setup.
+1. After installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". Note that `pfcgpumask`, `mdcbcgpumask`, `v1cgpumask` and `shagpumask` are GPU mappings for temporal networks of those regions and they depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc. The setup given below is for 7 NVIDIA GeForce GTX 1080 Ti and you may need to adjust it manually for your own setup.
 
 ```
 root = ""
@@ -235,13 +235,14 @@ mdcbcgpumask = [0,1,2,2,2,3,3,3,3,4,4,4,4]
 v1cgpumask = [4,4,4,4,4,5,5,5,5,5,5,5,5]
 shagpumask = [6,6,6,6,6,6,7,7,7,7,7,7,7]
 ```
+2. Obtain the full set of (52) gene coexpression networks used in the study from the following link and put these into a folder named "Data" which resides in the same directory as main.py.
 
-2. Run the following terminal command:
+3. Run the following terminal command:
 ```
 python main.py
 ```
 
-3. The output will be written to MultiExp01 folder which contains:
+4. The output will be written to MultiExp01 folder which contains:
     - Saved models for each training as ".pth" files
     - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
