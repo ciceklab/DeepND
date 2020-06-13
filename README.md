@@ -30,8 +30,8 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 
 ## Repository Contents
 - Data : Feature sets, gold standards and example networks
-- ASDExp00 : Example output for DeepND-ST
-- MultiExp00 : Example output for DeepND
+- ASDExp00 : Example output for DeepND-ST when analyzing genomewide Autism Spectrum Disorder (ASD) risk.
+- MultiExp00 : Example output for DeepND when co-analyzing genomewide ASD and Intellectual Disability (ID) risk.
 ## System Requirements
 ### Hardware Requirements
 
