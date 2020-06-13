@@ -25,7 +25,7 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 
 ## Questions & Comments 
 
-[firstauthorname].[firstauthorsurname]@bilkent.edu.tr
+[firstauthorname].[firstauthorsurname]@bilkent.edu.tr or <br>
 [secondauthorname].[secondauthorsurname]@bilkent.edu.tr
 
 ## Repository Contents
