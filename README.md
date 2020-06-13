@@ -153,7 +153,7 @@ python main.py
 3. The program will read the saved models and random states from MultiExp00 and the output will be written to MultiExp00Test folder which contains:
     - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
-    - Tensors that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+    - Tensors that highlight weights of spatio-temporal brain networks for different subset of genes as ".pt" files
   
 ### DeepND-ST Train Mode
 
