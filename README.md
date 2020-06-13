@@ -32,7 +32,7 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 
 <b>GPU:</b><br/>
 - For all spatio temporal regions : 7 NVIDIA GeForce GTX 1080 Ti or equivalent configurations with at least 70GB of memory;  Recommended: 3 NVIDIA TITAN RTX<br/>
-- For the Example included in this repository : 1 NVIDIA GeForce GTX 1080 Ti or equivalent configurations<br/>
+- For the demo included in this repository : 1 NVIDIA GeForce GTX 1080 Ti or equivalent configurations<br/>
 
 <b>Disk Storage:</b> 25 GB of free disk space
 
@@ -59,7 +59,7 @@ pillow<br/>
 ## Installation Guide
 
 In order to install required packages, either one of following methods can be used. <br/>
-<b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate.<br/>
+<b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate. Typical install time is 10 minutes. <br/>
 
 ```
 $ conda env create -f deepnd-legacy.yml
@@ -208,6 +208,39 @@ python main.py
     - Prediction results for the specified disorder (ASD) as a .txt file
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
     - heatmaps that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+
+### Reproducing the results given in the manuscript
+
+**Warning:** Make sure your computational unit satifies the hardware requirements for full experiment which is listed under Requirments section.
+
+1. After downloading all files and installing required packages as explained under "Installation Guide", use the configuration below for "main.py". Note that `pfcgpumask`, `mdcbcgpumask`, `v1cgpumask` and `shagpumask` are GPU mappings for temporal networks of those regions and they depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc. The setup given below is for 7 NVIDIA GeForce GTX 1080 Ti and you may need to adjust it manually for your own setup.
+
+```
+root = ""
+trial = 10
+k = 5
+mode = 0
+experiment = 1
+model_select = 0
+disorder = 0
+networks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+pfcgpumask = [0,0,0,0,5,5,5,6,6,7,7,7,7]
+mdcbcgpumask = [0,1,2,2,2,3,3,3,3,4,4,4,4]
+v1cgpumask = [4,4,4,4,4,5,5,5,5,5,5,5,5]
+shagpumask = [6,6,6,6,6,6,7,7,7,7,7,7,7]
+```
+
+2. Run the following terminal command:
+```
+python main.py
+```
+
+3. The output will be written to MultiExp01 folder which contains:
+    - Saved models for each training as ".pth" files
+    - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
+    - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
+    - heatmaps that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+    - pyTorch and Numpy random states for reproducing the same results in test mode 
 
 ## License
 - CC BY-NC-SA 2.0
