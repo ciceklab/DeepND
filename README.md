@@ -1,12 +1,14 @@
 # DeepND 
 ## Contents
 - [Overview](https://github.com/ciceklab/DeepND#overview)
+    - [Authors](https://github.com/ciceklab/DeepND#authors)
+    - [Questions & Comments](https://github.com/ciceklab/DeepND#authors)
 - [Repository Contents](https://github.com/ciceklab/DeepND#repository-contents)
 - [System Requirements](https://github.com/ciceklab/DeepND#system-requirments)
 - [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide)
 - [Usage](https://github.com/ciceklab/DeepND#usage)
 - [Demo](https://github.com/ciceklab/DeepND#demo)
-    - [Reproducing the results in the manuscript](https://github.com/ciceklab/DeepND#demo)
+    - [Reproducing the results in the manuscript](https://github.com/ciceklab/DeepND#reproducing-the-results-given-in-the-manuscript)
 - [License](https://github.com/ciceklab/DeepND#license)
 
 ## Overview
@@ -21,7 +23,7 @@ The model can easily be extended to work with more than 2 comorbid disorders or 
 
 Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 
-## Questions & comments 
+## Questions & Comments 
 
 [firstauthorname].[firstauthorsurname]@bilkent.edu.tr
 [secondauthorname].[secondauthorsurname]@bilkent.edu.tr
