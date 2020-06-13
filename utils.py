@@ -146,19 +146,19 @@ def load_networks(root, devices,  pfcgpumask, mdcbcgpumask, shagpumask, v1cgpuma
     shanetworkweights = []
     
     for period in pfc08Mask:
-        pfcnetworks.append(torch.load(root + "Data/EdgeTensors/PFC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
+        pfcnetworks.append(torch.load(root + "Data/EdgeTensors/PFC" + periods[period] + "Tensor.pt").type(torch.LongTensor))
         pfcnetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/PFC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
     
     for period in mdcbc08Mask:
-        mdcbcnetworks.append(torch.load(root + "Data/EdgeTensors/MDCBC" + periods[period] + "wTensor.pt").type(torch.LongTensor))
+        mdcbcnetworks.append(torch.load(root + "Data/EdgeTensors/MDCBC" + periods[period] + "Tensor.pt").type(torch.LongTensor))
         mdcbcnetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/MDCBC" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
       
     for period in v1c08Mask:
-        v1cnetworks.append(torch.load(root + "Data/EdgeTensors/V1C" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
+        v1cnetworks.append(torch.load(root + "Data/EdgeTensors/V1C" + periods[period] + "Tensor.pt").type(torch.LongTensor)) 
         v1cnetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/V1C" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
     
     for period in sha08Mask:
-        shanetworks.append(torch.load(root + "Data/EdgeTensors/SHA" + periods[period] + "wTensor.pt").type(torch.LongTensor)) 
+        shanetworks.append(torch.load(root + "Data/EdgeTensors/SHA" + periods[period] + "Tensor.pt").type(torch.LongTensor)) 
         shanetworkweights.append(torch.abs(torch.load(root + "Data/EdgeTensors/SHA" + periods[period] + "EdgeWeightTensor.pt").type(torch.FloatTensor)[0,:]))
     
     for i in range(len(pfc08Mask)):
