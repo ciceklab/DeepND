@@ -227,7 +227,7 @@ trial = 10
 k = 5
 mode = 0
 experiment = 1
-model_select = 0
+model_select = 1
 disorder = 0
 networks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 pfcgpumask = [0,0,0,0,5,5,5,6,6,7,7,7,7]
@@ -248,6 +248,8 @@ python main.py
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
     - Tensors that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
     - pyTorch and Numpy random states for reproducing the same results in test mode 
+    
+5. In order to reproduce single task, change `model_select = 0`, specify the disorder as explained in `main.py` and follow Steps 2-4. This time, the output folder will be named after selected disorder containing files described in Step 4.
 
 ## License
 - CC BY-NC-SA 2.0
