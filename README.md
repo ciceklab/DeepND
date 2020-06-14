@@ -235,7 +235,7 @@ mdcbcgpumask = [0,1,2,2,2,3,3,3,3,4,4,4,4]
 v1cgpumask = [4,4,4,4,4,5,5,5,5,5,5,5,5]
 shagpumask = [6,6,6,6,6,6,7,7,7,7,7,7,7]
 ```
-2. Obtain the full set of (52) gene coexpression networks used in the study from the following link and put these into the folder named "Data/EdgeTensors" which resides in the same directory as main.py.
+2. Obtain the full set of (52) gene coexpression networks used in the study from the following [link](https://doi.org/10.5281/zenodo.3892979) and put these into the folder named "Data/EdgeTensors" which resides in the same directory as main.py.
 
 3. Run the following terminal command:
 ```
