@@ -35,11 +35,7 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 ## System Requirements
 ### Hardware Requirements
 
-<b>GPU:</b><br/>
-- For all spatio temporal regions : 7 NVIDIA GeForce GTX 1080 Ti or equivalent configurations with at least 70GB of memory;  Recommended: 3 NVIDIA TITAN RTX<br/>
-- For the demo included in this repository : 1 NVIDIA GeForce GTX 1080 Ti or equivalent configurations<br/>
-
-<b>Disk Storage:</b> 25 GB of free disk space
+DeepND could be run on either CPU and GPU. However, for shorter training time, we recommend GPU support.
 
 ### Software Requirments
 <b>Python:</b> 3.6+<br/>
