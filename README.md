@@ -8,7 +8,7 @@
 - [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide)
 - [Usage](https://github.com/ciceklab/DeepND#usage)
 - [Demo](https://github.com/ciceklab/DeepND#demo)
-- [Replicating Published Results](https://github.com/ciceklab/DeepND#replicating-pblished-results)
+- [Replicating Published Results](https://github.com/ciceklab/DeepND#replicating-published-results)
 - [License](https://github.com/ciceklab/DeepND#license)
 
 ## Overview
