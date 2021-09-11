@@ -71,18 +71,8 @@ $ conda activate deepnd-legacy
 
 ## Usage
 
-The model parameters are listed in "main.py". 
-- root : Working directory to read data and store results | Default : ""<br/>
-- trial : Number of trials to repeat training with random weight initializations | Default : 10<br/>
-- k : k-fold cross validation | Default : 5<br/>
-- mode : Mode selection. In the train mode randomly initialized model is trained. In the test mode, previously saved models are used to regenerate results. | 1 : Test mode, 0: Train mode | Default : 0<br/>
-- experiment : The experiment ID. Significant for test mode as the folder with the same id will be used to load random states and models. | Default : 0<br/>
-- model_select : Single Task or Multi Task model selection. For single task model the disease should be specified as either ID or ASD by setting the proper parameter. | 1 : Multi, 0: Single | Default : 1<br/>
-- disorder : The name of the subject disorder. It is required for singletask mode (DeepND-ST), can be left in default for multitask mode (DeepND)  | 0 : ASD, 1 : ID | Default : 0<br/>
-- networks : List that contains spatio-temporal regions to be fed to the model. The example is given for region 11 (temporal window 12-14), to run the example : [11] | Default (all regions) : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] |<br/>
-- pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask : GPU mappings for spatio-temporal brain co-expression networks. These mappings depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc.
-
-After setting the parameters listed above, you can run the program using the following command in working directory:
+The model parameters are explained in the configuration file.
+You can run the program using the following command in working directory:
 ```
 python main.py
 ```
@@ -91,161 +81,20 @@ python main.py
 
 A quick demo for DeepND is included for autism spectrum disorder (ASD) and intelectual disabilty(ID). Required inputs, such as spatio-temporal brain co-expression netwroks, gene features and gold standards are provided in the "Data" folder. 
 
-### DeepND Train Mode
+1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), run the following terminal command:
 
-1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
-
-```
-root = ""
-trial = 10
-k = 5
-mode = 0
-experiment = 0
-model_select = 1
-disorder = 0
-networks = [11] 
-pfcgpumask = [0]
-mdcbcgpumask = [0]
-v1cgpumask = [0]
-shagpumask = [0]
-```
-
-2. Run the following terminal command:
 ```
 python main.py
 ```
 
-3. The output will be written to MultiExp00 folder which contains:
+2. The output will be written to MultiExp00 folder which contains:
     - Saved models for each training as ".pth" files
     - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
     - Tensors that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
     - pyTorch and Numpy random states for reproducing the same results in test mode
-  
-### DeepND Test Mode
 
-1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
-
-```
-root = ""
-trial = 10
-k = 5
-mode = 1
-experiment = 0
-model_select = 1
-disorder = 0
-networks = [11] 
-pfcgpumask = [0]
-mdcbcgpumask = [0]
-v1cgpumask = [0]
-shagpumask = [0]
-```
-
-2. Run the following terminal command:
-```
-python main.py
-```
-
-3. The program will read the saved models and random states from MultiExp00 and the output will be written to MultiExp00Test folder which contains:
-    - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
-    - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
-    - Tensors that highlight weights of spatio-temporal brain networks for different subset of genes as ".pt" files
-  
-### DeepND-ST Train Mode
-
-1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
-
-```
-root = ""
-trial = 10
-k = 5
-mode = 0
-experiment = 0
-model_select = 0
-disorder = 0
-networks = [11] 
-pfcgpumask = [0]
-mdcbcgpumask = [0]
-v1cgpumask = [0]
-shagpumask = [0]
-```
-
-2. Run the following terminal command:
-```
-python main.py
-```
-
-3. The output will be written to ASDExp00 folder which contains:
-    - Saved models for each training as ".pth" files
-    - Prediction results for the specified disorder as a .txt file
-    - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
-    - Tensors that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
-    - pyTorch and Numpy random states for reproducing the same results in test mode
-  
-### DeepND-ST Test Mode
-
-1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". 
-
-```
-root = ""
-trial = 10
-k = 5
-mode = 1
-experiment = 0
-model_select = 0
-disorder = 0
-networks = [11] 
-pfcgpumask = [0]
-mdcbcgpumask = [0]
-v1cgpumask = [0]
-shagpumask = [0]
-```
-
-2. Run the following terminal command:
-```
-python main.py
-```
-
-3. The program will read the saved models and random states from ASDExp00 and the output will be written to ASDExp00Test folder which contains:
-    - Prediction results for the specified disorder (ASD) as a .txt file
-    - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
-    - Tensors that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
-
-### Reproducing the results given in the manuscript
-
-**Warning:** Make sure your computational unit satifies the hardware requirements for full experiment which is listed under [Requirements](https://github.com/ciceklab/DeepND#system-requirements).
-
-1. After installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), use the configuration below for "main.py". Note that `pfcgpumask`, `mdcbcgpumask`, `v1cgpumask` and `shagpumask` are GPU mappings for temporal networks of those regions and they depend on GPU specifications of the computational unit i.e. number of GPUs, avaliable memory of each GPU etc. The setup given below is for 7 NVIDIA GeForce GTX 1080 Ti and you may need to adjust it manually for your own setup.
-
-```
-root = ""
-trial = 10
-k = 5
-mode = 0
-experiment = 1
-model_select = 1
-disorder = 0
-networks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-pfcgpumask = [0,0,0,0,5,5,5,6,6,7,7,7,7]
-mdcbcgpumask = [0,1,2,2,2,3,3,3,3,4,4,4,4]
-v1cgpumask = [4,4,4,4,4,5,5,5,5,5,5,5,5]
-shagpumask = [6,6,6,6,6,6,7,7,7,7,7,7,7]
-```
-2. Obtain the full set of (52) gene coexpression networks used in the study from the following [link](https://doi.org/10.5281/zenodo.3892979) and put these into the folder named "Data/EdgeTensors" which resides in the same directory as main.py.
-
-3. Run the following terminal command:
-```
-python main.py
-```
-
-4. The output will be written to MultiExp01 folder which contains:
-    - Saved models for each training as ".pth" files
-    - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
-    - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
-    - Tensors that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
-    - pyTorch and Numpy random states for reproducing the same results in test mode 
-    
-5. In order to reproduce single task, change `model_select = 0`, specify the disorder as explained in `main.py` and follow Steps 2-4. This time, the output folder will be named after selected disorder containing files described in Step 4.
+## Replicating Published Results
 
 ## License
 - CC BY-NC-SA 2.0
