@@ -96,7 +96,7 @@ python main.py
 
 ## Replicating Published Results
 
-This Github page is part of the work included in [Deep multitask learning of gene risk for comorbid neurodevelopmental disorders] (https://www.biorxiv.org/content/10.1101/2020.06.13.150201v3). To replicate the results presented in the paper, please refer to [Replicating Results](https://github.com/ciceklab/DeepND/blob/master/replicate.md) .
+This Github page is part of the work included in ["Deep multitask learning of gene risk for comorbid neurodevelopmental disorders"](https://www.biorxiv.org/content/10.1101/2020.06.13.150201v3). To replicate the results presented in the paper, please refer to [Replicating Results](https://github.com/ciceklab/DeepND/blob/master/replicate.md) .
 
 ## License
 - CC BY-NC-SA 2.0
