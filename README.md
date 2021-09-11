@@ -98,17 +98,17 @@ python main.py
 
 This Github page is part of the work included in ["Deep multitask learning of gene risk for comorbid neurodevelopmental disorders"](https://www.biorxiv.org/content/10.1101/2020.06.13.150201v3). To replicate the results presented in the paper, please refer to [Replicating Results](https://github.com/ciceklab/DeepND/blob/master/replicate.md) .
 
-```
- @article{deepND2021,
-  title={Deep multitask learning of gene risk for comorbid neurodevelopmental disorders},
-  author={Beyreli, Ilayda and Karakahya, Oguzhan and Cicek, A Ercument},
-  journal={bioRxiv},
-  pages={2020--06},
-  year={2021},
-  publisher={Cold Spring Harbor Laboratory}
-}
-```
-
 ## License
 - CC BY-NC-SA 2.0
+- To use the information on this repository please cite the manuscript covering this work.
+    ```
+    @article{deepND2021,
+    title={Deep multitask learning of gene risk for comorbid neurodevelopmental disorders},
+    author={Beyreli, Ilayda and Karakahya, Oguzhan and Cicek, A Ercument},
+    journal={bioRxiv},
+    pages={2020--06},
+    year={2021},
+    publisher={Cold Spring Harbor Laboratory}
+    }
+    ```
 - For commercial usage, please contact.
