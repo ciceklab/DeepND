@@ -258,8 +258,7 @@ def write_experiment_stats (root, aucs, aupr, mmcs, experiment_name, trial, k, i
 def create_network_list(networks):
     network_files = []
     splitted_tokens = networks.split(",")
-    test_network_path = "/mnt/oguzhan/oguzhan_workspace/EdgeTensors/PointEight/" #NEO
-    #test_network_path = "/media/hdd1/oguzhan/oguzhan_workspace/EdgeTensors/PointEight/" # GPU2
+    test_network_path = "Data/"
     regions = ["PFC","MDCBC","V1C","SHA"]
     periods = ["1-3","2-4","3-5","4-6","5-7","6-8","7-9","8-10","9-11","10-12","11-13","12-14","13-15"]
     for token in splitted_tokens:

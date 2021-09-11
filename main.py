@@ -252,23 +252,3 @@ driver = DeepND_Driver(root,
          moe_features,
          moe_feat_size)
 
-'''
-if model_select:
-    # Multi Task Model
-    #input_size = [29, 17, 13] # featsize = 29 | featsizeasd = 17 | featsizeid = 13 
-    #l_rate = [0.0007, 0.0007, 0.777] # lrc = 0.0007 | lrasd = 0.0007 | lrid = 0.007
-    #wd = 0.0001
-    disordername = "Multi"
-    deepnd(root, path, input_size, mode,  learning_rates, wd, trial, k, disordername, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
-else:
-    # Single Task Model
-    if disease:
-        input_size = 13
-        #l_rate = 0.0007  
-        diseasename = "ID"
-    else:
-        input_size = 17
-        #l_rate = 0.0007 
-        diseasename = "ASD"
-    deepnd_st( root, path, input_size, mode, learning_rates, trial, k, disordername, devices, pfcgpumask, mdcbcgpumask, shagpumask, v1cgpumask, state, experiment, networks)
-'''

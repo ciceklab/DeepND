@@ -35,7 +35,7 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 ## System Requirements
 ### Hardware Requirements
 
-DeepND can run on either CPU or GPU. However, for shorter training time, we recommend GPU support.
+DeepND can run on either CPU or GPU. However, for shorter training time, we strongly recommend GPU support.
 
 ### Software Requirments
 <b>Python:</b> 3.6+<br/>
