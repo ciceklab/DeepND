@@ -13,7 +13,7 @@ The results of DeepND for autism spectrum disorder (ASD) and intellectual disabi
    python main.py
    ```
 4. For more advanced setups that may require GPU parallelism, please refer to the descriptions in the *config* file.
-5. To use generated results in your own work please cite to the original manuscript.
+5. To use generated results in your own work, please cite to the original manuscript.
 ```
 @article{beyreli2021deep,
   title={Deep multitask learning of gene risk for comorbid neurodevelopmental disorders},
