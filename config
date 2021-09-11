@@ -1,0 +1,106 @@
+# Config file for DeepND. Please visit project website for sample config files https://github.com/ciceklab/DeepND
+
+# Set GPU id's that you want to use. Make sure that this variable is set first in config file. GPUs are listed in PCI connection order (same order as they are in nvidia--smi).
+system_gpu_mask = 0
+
+#Networks (graphs) that will be used for training/test. You can use any number of networks using the options provided below, separated by commas.
+#Options:
+#1- You can add a single predefined network using this option. Format:[NetworkName][Period]. Network Names = PFC, MDCBC, V1C or SHA. Periods = 1-3, 2-4, 3-5, 4-6, ..., 13-15. Examples: PFC3-5, MDCBC8-10.
+#2- You can add networks from all brain regions for a given period using this option. Format:[Period]. Periods = 1-3, 2-4, 3-5, 4-6,..., 13-15. Examples: 1-3, 8-10
+#3- You can use all 52 predefined networks using this option. Format:brainspan_all
+#4- You can use non-overlapping periods for all regions. Format:brainspan_no_overlap
+#5- You can provide a custom network by providing its path using this option. The given file should be a pytorch tensor with dimensions [2, e] where 'e' is the number of edges in the network.
+#Tensor type should be 'torch.long' and the values should be node indices with respect to features. Each column specifies an edge. Networks will be converted to undirected version with self edges
+#automatically. Sample file content: edges[0,0] = 1515, edges[0,1] = 1617 denotes an edge between nodes 1515 and 1617. Examples:mynetwork.pt,Data/MyNetworks/mynetwork2.pt
+#Default value: networks=brainspan_all
+#Usage example: networks = PFC1-3,MDCBC9-11,5-7,7-9,Data/MyNetworks/edges.pt
+networks = 12-14
+
+#This parameter controls the feature sets that will be used for training/test. You can use any number of feature sets using the options provided below, separated by commas, but each feature set will be used by a separate task.
+#Options:
+#1- You can add the predefined TADA feature set for ASD. Format:ASD.
+#2- You can add the predefined TADA feature set for ID. Format:ID.
+#3- You can add the predefined TADA feature set for SCZ. Format:SCZ
+#4- You can add the predefined TADA feature set for EPI. Format:EPI
+#5- You can use the pLI as the only feature. Format:Data/pli.npy
+#6- You can use identity vector as the node feature. Format:identity_25825
+#7- You can add the predefined TADA feature set that combines all disorders this study considers (ASD, ID, SCZ, EPI). Format:ALL
+#8- You can add the predefined TADA feature set for combination of two disorders. Format: ASDID, ASDSCZ, ASDEPI, IDSCZ, IDEPI, EPISCZ
+#9- You can also add custom feature sets by providing its path. Please note that the feature file should be either a comma separated file or a .npy file. If providing a comma separated file,
+#the file must have headers for features. Please note that every column in the file fill be used as a feature. If you would like to name instances, please see the parameter
+#'feature_names'. If only 1 value is given, the program will execute in single task setting.
+#Default value: feature_sets = ASD, ID, Common
+#Usage Example: feature_sets = ASD, ID, Data/Schizophrenia/features.csv, Data/MyDisorder/disorder.npy, Data/common_features.npy
+#feature_sets = ASD,ID,ASDID
+feature_sets = identity_25825, identity_25825, identity_25825
+
+#This parameter controls the positive ground truth values for training/test processes. You can use predefined ground truths for ASD and/or ID or you could use your own custom ground
+#truth files. Please note that the order is important here. The first value will be the first task, and the second value will be second and so on. The following parameters follow the same
+#convention as well. 
+#Options:
+#1- You can use the predefined ground truth file of ASD by using this option. Format:ASD, ASD_SFARI_E1E2E3,SPARK_Pilot
+#2- You can use the predefined ground truth file of ID by using this options. Format:ID
+#3- You can use the predefined ground truth file of SCZ by using this options. Format:SCZ
+#4- You can use the predefined ground truth file of EPI by using this options. Format:EPI
+#5- You can provide a custom ground truth file using option. The file must be either single column or double column. If a single column file provided, all instances inside will be
+#considered as E1 (highest confidence). If double column file is given, the second column will be used for confidence levels. Only 'E1', 'E2', 'E3' and 'E4' values are allowed in the second
+#column. The first column must always contain instance indices with respect to features.
+#Default value: positive_ground_truths = ASD, ID
+#Usage example: positive_ground_truths = ASD,ID,Data/mygtfile.csv,Data/mygtfile2.txt
+positive_ground_truths = ASD, ID
+
+#Same as positive_ground_truths expect the following: Evidence levels are not supported for negative ground truths. Thus, only the first column of the file will be used.
+negative_ground_truths=Data/ASD_Neg_Gold_Standards.csv, Data/ID_Neg_Gold_Standards.csv
+
+#This options allows you to assign each network to a different GPU. Since GCN uses full batch training, the memory demand would be high if big networks are used. You can either manually
+#assign each network to a GPU or use automatic assignment algorithm. Please note that automatic assignment does not guarantee an error-free execution.
+#Options:
+#1- You can manually assign networks to GPUs using this option. Format:[GPUIndex1],[GPUIndex2],[GPUIndex3],...[GPUIndexN] where 'N' is the number of networks. Example: 0,5,1,2,3,4
+#2- You can let the program automatically assign each network to a GPU according to the available space in each GPU. Format:auto.
+#Default value: network_gpu_mask = auto
+#Usage example: network_gpu_mask = 0,1,5,4,2,3,4
+network_gpu_mask = auto
+
+# This option allows you to assign a different learning rate for each task, including the common layer for multi-task settings. Please note that the learning rate for the common layer
+# must be the last item in the list. If you only have a single task, 1 learning rate value suffices.
+learning_rate = 0.001, 0.001, 0.001
+
+weight_decay = 0.0001
+
+#Number of hidden units in 2-Layer GCN modules.
+hidden_units = 8
+
+#Number of iterations to perform.
+trial_count = 10
+
+#fold count for k-fold cross validation
+fold_count = 5
+
+#If 1, a pretrained model will be used to perform feed-forward operation. Set 0 to perform an end-to-end training.
+test_mode = 0
+
+#Experiment ID. This number will be used to name the folder for results.
+experiment_id = 0
+
+#Model debugging. Verbose mode provides more outputs during the runtime to diagnose issues.
+verbose = 1
+
+#Experiment folder name, experiment id will also be added to the folder name
+experiment_name = deepND_multitask
+
+# Number of output units for common layer for multitask model. If provided only a single task, this value will not be used.
+common_layer_units = 5
+
+#Task names for each task. These names will be used to name result files and terminal outputs for each task during the execution.
+task_names = ASD, ID
+
+# Original method returns predictions with indices only. If you have names for your features, you can provide them in a separate comma separated file
+# Ordering of names must be done with respect to instance order in feature files. Any number of columns could be used. All of the columns will be added to the result file
+# e.g. feature_names = mnt/DeepND/v2/Data/genenames.csv,
+feature_names = /Data/genenames.csv
+
+#Give the seed value for torch models so that you can replicate your results. You can also provide "random" to perform a random training.
+torch_seed = 95
+
+#Give the seed value for numpy to keep folds the same across multiple iterations. You can also provide "random" to construct random folds during training.
+numpy_seed = 95
