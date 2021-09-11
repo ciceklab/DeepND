@@ -258,8 +258,7 @@ def write_experiment_stats (root, aucs, aupr, mmcs, experiment_name, trial, k, i
 def create_network_list(networks):
     network_files = []
     splitted_tokens = networks.split(",")
-    test_network_path = "/mnt/oguzhan/oguzhan_workspace/EdgeTensors/PointEight/" #NEO
-    #test_network_path = "/media/hdd1/oguzhan/oguzhan_workspace/EdgeTensors/PointEight/" # GPU2
+    test_network_path = "Data/" 
     regions = ["PFC","MDCBC","V1C","SHA"]
     periods = ["1-3","2-4","3-5","4-6","5-7","6-8","7-9","8-10","9-11","10-12","11-13","12-14","13-15"]
     for token in splitted_tokens:
@@ -313,8 +312,6 @@ def create_feature_set_list(feature_set):
             feature_files.append("Data/Multi_IDSCZ_TADA_Features.npy")
         elif token.strip() == "IDEPI": # id & epilepsy
             feature_files.append("Data/Multi_IDEPI_TADA_Features.npy")
-        elif token.strip() == "Krishnan":
-            feature_files.append("/mnt/oguzhan/oguzhan_workspace/Krishnan/KrishnanFeatures.pt")
         else:
             feature_files.append(token.strip())
         
@@ -347,34 +344,7 @@ def create_gt_list(root, positive_gt, negative_gt, verbose, k, state, instance_c
             gene_indices,gene_permutations, gene_counts, y = __match_ground_truths__(root, "Data/SPARK_Pilot_Pos_Gold_Standards.csv", verbose, k, state,take_path = True,neg_file = "Data/ASD_SPARC_Neg_Gold_Standards.csv")
         else:
             gene_indices,gene_permutations, gene_counts, y = __match_ground_truths__(root, token.strip(), verbose, k, state,take_path = True,neg_file = neg_splitted_tokens[index])
-            '''
-            negative_gt_file = pd.read_csv(negative_gt.split(",")[index].strip()).values
-            positive_gt_file = pd.read_csv(token.strip()).values
-            if positive_gt_file.shape[1] == 2: # With evidence weights
-                positive_indices = np.array(positive_gt_file[:,0], dtype = np.long)
-                positive_evidences = positive_gt_file[:,1]
-            elif positive_gt_file.shape[1] == 1: #Without evidence weights
-                positive_indices = np.array(positive_gt_file[:,0], dtype = np.long)
-                positive_evidences = np.full(positive_indices.shape, "E1")
-            else:
-                print("Ground truth file ", token.strip()," is expected to have 1 or 2 columns. Please check github.com/ciceklab/DeepND for details.")
-                exit(0)
-             
-            if negative_gt_file.shape[1] == 2: #With evidence weights
-                negative_indices = np.array(negative_gt_file[:,0], dtype = np.long)
-                negative_evidences = negative_gt_file[:,1]
-            elif negative_gt_file.shape[1] == 1: #Without evidence weights
-                negative_indices = np.array(negative_gt_file[:,0], dtype = np.long)
-                
-                negative_evidences = np.full(negative_indices.shape, "E1") #NOT SUPPORTED CURRENTLY !!
-            else:
-                print("Ground truth file ", token.strip(), " is expected to have 1 or 2 columns. Please check github.com/ciceklab/DeepND for details.")
-                exit(0)
-            gene_indices, gene_permutations, gene_counts = create_validation_set(positive_indices, negative_indices, positive_evidences, k, state)
-            y = torch.zeros((instance_count,), dtype = torch.long)
-            y[positive_indices] = 1
-            y[negative_indices] = 0
-            '''
+
         all_gt_gene_indices.append(gene_indices)
         all_gt_gene_permutations.append(gene_permutations)
         all_gt_gene_counts.append(gene_counts)
