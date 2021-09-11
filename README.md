@@ -100,7 +100,7 @@ This Github page is part of the work included in ["Deep multitask learning of ge
 
 ## License
 - CC BY-NC-SA 2.0
-- To use the information on this repository please cite the manuscript covering this work.
+- To use the information on this repository, please cite the manuscript covering this work.
     ```
     @article{deepND2021,
     title={Deep multitask learning of gene risk for comorbid neurodevelopmental disorders},
