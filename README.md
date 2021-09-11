@@ -96,6 +96,8 @@ python main.py
 
 ## Replicating Published Results
 
+[Replicating Results](https://github.com/ciceklab/DeepND/blob/master/replicate.md)
+
 ## License
 - CC BY-NC-SA 2.0
 - For commercial usage, please contact.
