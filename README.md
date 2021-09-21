@@ -91,7 +91,7 @@ python main.py
     - Saved models for each training as ".pth" files
     - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
-    - Tensors that highlight weights of spatio-temporal brain netwroks for different subset of genes as ".pt" files
+    - Tensors that highlight weights of spatio-temporal brain networks for different subset of genes as ".pt" files
     - pyTorch and Numpy random states for reproducing the same results in test mode
 
 ## Replicating Published Results
