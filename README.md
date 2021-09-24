@@ -35,25 +35,33 @@ Ilayda Beyreli*, Oguzhan karakahya*, A. Ercument Cicek
 ## System Requirements
 ### Hardware Requirements
 
-DeepND can run on either CPU or GPU. However, for shorter training time, we strongly recommend GPU support.
+DeepND can run on either CPU or GPU. However, for shorter training time, we strongly recommend GPU support of at least one Nvidia GeForce GTX 1080 or its equivalent.
 
 ### Software Requirments
 <b>Python:</b> 3.6+<br/>
 <b>OS:</b> All major platforms (Linux, macOS, Windows)<br/>
-<b>Dependencies:</b>Listed in requirements.txt<br/>
-
+<b>Dependencies:</b> Listed in ```requirements.txt``` <br/>
 
 ## Installation Guide
 
 In order to install required packages, either one of following methods can be used. <br/>
-<b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd-legacy.yml" and activate. Typical install time is 10 minutes. <br/>
+<b>Anaconda Quick Installation:</b>  After downloading all files, import the conda enviroment named "deepnd_legacy_environment.yml" and activate. Typical install time is 10 minutes. <br/>
 
 ```
-$ conda env create -f deepnd-legacy.yml
+$ conda env create -f deepnd_legacy_environment.yml
 $ conda activate deepnd-legacy
 ```
 
-<b>General Installation:</b> Install all packages listed under [Software Requirements-Dependencies](https://github.com/ciceklab/DeepND#software-requirments) section with their given versions. 
+<b>General Installation:</b> Install all packages listed under [Software Requirements-Dependencies](https://github.com/ciceklab/DeepND#software-requirments) section with their given versions with either PyPI or Anaconda.
+
+```
+$ pip install -r requirements.txt
+```
+OR
+
+```
+$ conda install -r requirements.txt
+```
 
 ## Usage
 
