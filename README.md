@@ -1,4 +1,6 @@
 # DeepND 
+DOI: 10.5281/zenodo.6501496
+
 ## Contents
 - [Overview](https://github.com/ciceklab/DeepND#overview)
     - [Authors](https://github.com/ciceklab/DeepND#authors)
