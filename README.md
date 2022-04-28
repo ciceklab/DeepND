@@ -1,5 +1,5 @@
 # DeepND 
-DOI: 10.5281/zenodo.6501496
+[![DOI](https://zenodo.org/badge/271965480.svg)](https://zenodo.org/badge/latestdoi/271965480)
 
 ## Contents
 - [Overview](https://github.com/ciceklab/DeepND#overview)
