@@ -75,7 +75,9 @@ python main.py
 
 ## Demo
 
-A quick demo for DeepND is included for autism spectrum disorder (ASD) and intelectual disabilty(ID). Required inputs, such as spatio-temporal brain co-expression netwroks, gene features and gold standards are provided in the "Data" folder. 
+A quick demo for DeepND is included for autism spectrum disorder (ASD) and intelectual disabilty(ID). This demo is designed to generate predictions for ASD and ID on an avaerage personal computer. Therefore, the inputs are limited to pLI and a single network which is the brain gene co-expression network for MDCBC region between adolescence and mid-adulthood. 
+
+Required inputs, such as spatio-temporal brain co-expression networks, gene features and gold standards are provided in the "Data" folder.  All of the reqired parameters are already set in the <i>config</i> file as default values.
 
 1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), run the following terminal command:
 
