@@ -92,7 +92,7 @@ After each training, the best model is saved as a ".pth" file to reproduce resul
 
 An example terminal output of the main process would be as follows.
 
-![Example terminal output](/assets/example.png)
+![Example terminal output](https://github.com/ciceklab/DeepND/blob/master/example.png)
 
 3. The output will be written to MultiExp00 folder which contains:
     - Saved models for each training as ".pth" files
