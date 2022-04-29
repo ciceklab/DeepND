@@ -90,6 +90,10 @@ This command will run the main function of the DeepND which sorts gold standard 
 
 After each training, the best model is saved as a ".pth" file to reproduce results later on and to enable more advanced trainin procedures (such as transfer learning) if needed. Before each trial, the allocated and cached GPU memory is reported so that you monitor and adjust your inputs according to your own compuatational units limitations.
 
+An example terminal output of the main process would be as follows.
+
+![Example terminal output](../assets/example.png)
+
 3. The output will be written to MultiExp00 folder which contains:
     - Saved models for each training as ".pth" files
     - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
