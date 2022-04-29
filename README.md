@@ -79,18 +79,25 @@ A quick demo for DeepND is included for autism spectrum disorder (ASD) and intel
 
 Required inputs, such as spatio-temporal brain co-expression networks, gene features and gold standards are provided in the "Data" folder.  All of the reqired parameters are already set in the <i>config</i> file as default values.
 
-1. After downloading all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide), run the following terminal command:
+1. Download all files and installing required packages as explained under [Installation Guide](https://github.com/ciceklab/DeepND#installation-guide).
+
+2. Run the following terminal command:
 
 ```
 python main.py
 ```
+This command will run the main function of the DeepND which sorts gold standard gene lists, creates randomized masks for the cross-validation, initializes the model and starts training.
 
-2. The output will be written to MultiExp00 folder which contains:
+After each training, the best model is saved as a ".pth" file to reproduce results later on and to enable more advanced trainin procedures (such as transfer learning) if needed. Before each trial, the allocated and cached GPU memory is reported so that you monitor and adjust your inputs according to your own compuatational units limitations.
+
+3. The output will be written to MultiExp00 folder which contains:
     - Saved models for each training as ".pth" files
     - Prediction results for first disorder (ASD), and the second (ID) in separate .txt files
     - Experimental stats (mean, stdev and median of performance metrics, runtime etc.) in runreport.txt file
     - Tensors that highlight weights of spatio-temporal brain networks for different subset of genes as ".pt" files
     - pyTorch and Numpy random states for reproducing the same results in test mode
+
+You may also try running this demo with different gene interactions networks. Several examples networks that are mentioned in the artice are publicly avaliable at  [https://doi.org/10.5281/zenodo.3892979](https://doi.org/10.5281/zenodo.3892979). You can download any number of networks from there, and adjust the <i>config</i> file accordingly before repeating Step 2.
 
 ## Replicating Published Results
 
